@@ -1,0 +1,121 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<h1>Retention</h1>
+<canvas id="myChart" style="width:100%;max-width:700px"></canvas>
+
+<h1>Retention D1 = <span id = "retentionDay1"></span></h1>
+<h1>Thời gian chơi trung bình = <span id = "avgPlayTime"></span></h1>
+<h1>Số lần chơi trung bình = <span id = "avgSession"></span></h1>
+
+<script>
+  const versionName = "1_9";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCNVYdSsKFM86I1vvpJAkk7tyVFMBMAJvc",
+    authDomain: "juicy-defend-14618.firebaseapp.com",
+    databaseURL: "https://juicy-defend-14618-default-rtdb.firebaseio.com",
+    projectId: "juicy-defend-14618",
+    storageBucket: "juicy-defend-14618.appspot.com",
+    messagingSenderId: "846332395452",
+    appId: "1:846332395452:web:57e1db717abf73fdc175b9",
+    measurementId: "G-5CTWE49M0C"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+
+  var allData = [];
+
+  var database = firebase.database();
+  const dbRef = firebase.database().ref();
+  dbRef.child(versionName).child("userdata").get().then((snapshot) => {
+    if (snapshot.exists()) {
+      console.log(snapshot.val());
+      allData = snapshot.val();
+      console.log(allData);
+      drawChart();
+    } else {
+      console.log("No data available");
+    }
+  }).catch((error) => {
+    console.error(error);
+  });
+
+
+
+  function drawChart(){
+    // var xValues = ["Italy", "France", "Spain", "USA", "Argentina"];
+    // var yValues = [55, 49, 44, 24, 15];
+    // var barColors = ["red", "green", "blue", "orange", "brown"];
+
+    var xValues = [];
+    var yValues = [];
+    var retentionValues = [];
+    var barColors = "blue";
+
+    for (let i = 0; i <= 7; i++){
+      xValues.push("retention " + i);
+      retentionValues.push(0);
+    }
+
+    let retentionDay0 = 0;
+    let retentionDay1 = 0;
+    let totalPlayTime = 0;
+    let totalSessionCount = 0;
+    let userCount = 0;
+
+    for (const property in allData) {
+      userCount++;
+
+      var user = allData[property];
+      let retention_type = user['retentionType'];
+      let today = 738550.4475819197
+      let timeSinceFirstPlay = Math.round(today - user["startPlayDay"]);
+
+      let bool0 = timeSinceFirstPlay > 0 && retention_type >= 0;
+      let bool1 = timeSinceFirstPlay > 1 && retention_type >= 1;
+
+      if (bool0) retentionDay0+=1;
+      if (bool1) retentionDay1+=1;
+
+      let info = property + " timeSinceFirstPlay = " + timeSinceFirstPlay + ", retention 0 = " + bool0;
+      if (bool1) info += ", retention 1 = " + bool1;
+      console.log(info);
+
+      let playTime = user["totalPlayTime"];
+      totalPlayTime += playTime;
+
+      let sessionCount = user["sessionCount"];
+      totalSessionCount += sessionCount;
+      // retentionDay0 += 1;
+      // retentionDay1 += 1;
+    }
+
+    retentionValues[0] = retentionDay0;
+    retentionValues[1] = retentionDay1;
+    console.log(retentionValues);
+
+    const div1 = document.getElementById("retentionDay1");
+    div1.innerText = (retentionDay1 / retentionDay0 * 100).toFixed(2) + "%"; 
+
+    const div2 = document.getElementById("avgPlayTime");
+    div2.innerText = (totalPlayTime / userCount / 60).toFixed(2) + " phút"; 
+
+    const div3 = document.getElementById("avgSession");
+    div3.innerText = (totalSessionCount / userCount).toFixed(2) + " lần"; 
+
+    new Chart("myChart", {
+      type: "bar",
+      data: {
+        labels: xValues,
+        datasets: [{
+          backgroundColor: barColors,
+          data: retentionValues
+        }]
+      },
+      options: {}
+    });
+  }
+</script>
