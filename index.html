@@ -2,6 +2,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
+<h1>Select version <a href="">2_3</a></h1>
 <h1>Retention</h1>
 <canvas id="myChart" style="width:100%;max-width:700px"></canvas>
 
@@ -10,7 +11,7 @@
 <h1>Số lần chơi trung bình = <span id = "avgSession"></span></h1>
 
 <script>
-  const versionName = "1_9";
+  const versionName = "2_3";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCNVYdSsKFM86I1vvpJAkk7tyVFMBMAJvc",
@@ -28,20 +29,24 @@
 
   var allData = [];
 
-  var database = firebase.database();
-  const dbRef = firebase.database().ref();
-  dbRef.child(versionName).child("userdata").get().then((snapshot) => {
-    if (snapshot.exists()) {
-      console.log(snapshot.val());
-      allData = snapshot.val();
-      console.log(allData);
-      drawChart();
-    } else {
-      console.log("No data available");
-    }
-  }).catch((error) => {
-    console.error(error);
-  });
+  getData(versionName);
+
+  function getData(version){
+    var database = firebase.database();
+    const dbRef = firebase.database().ref();
+    dbRef.child(version + "").child("userdata").get().then((snapshot) => {
+      if (snapshot.exists()) {
+        console.log(snapshot.val());
+        allData = snapshot.val();
+        console.log(allData);
+        drawChart();
+      } else {
+        console.log("No data available");
+      }
+    }).catch((error) => {
+      console.error(error);
+    });
+  }
 
 
 
@@ -67,9 +72,10 @@
     let userCount = 0;
 
     for (const property in allData) {
-      userCount++;
-
       var user = allData[property];
+      let isRealUser = user['installerName'] == 'com.android.vending';
+      if (isRealUser == false) continue;
+      userCount++;
       let retention_type = user['retentionType'];
       let today = 738550.4475819197
       let timeSinceFirstPlay = Math.round(today - user["startPlayDay"]);
