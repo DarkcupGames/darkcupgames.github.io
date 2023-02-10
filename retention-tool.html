@@ -28,22 +28,6 @@
 <script>
   const versionName = "2_3";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCNVYdSsKFM86I1vvpJAkk7tyVFMBMAJvc",
-    authDomain: "juicy-defend-14618.firebaseapp.com",
-    databaseURL: "https://juicy-defend-14618-default-rtdb.firebaseio.com",
-    projectId: "juicy-defend-14618",
-    storageBucket: "juicy-defend-14618.appspot.com",
-    messagingSenderId: "846332395452",
-    appId: "1:846332395452:web:57e1db717abf73fdc175b9",
-    measurementId: "G-5CTWE49M0C"
-  };
-
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-
-
-
   function getData(version){
     var database = firebase.database();
     const dbRef = firebase.database().ref();
