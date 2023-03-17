@@ -28,20 +28,20 @@
     <button id="sidebarCollapse" type="button" class="btn btn-light bg-white rounded-pill shadow-sm px-4 mb-4"><i
             class="fa fa-bars mr-2"></i><small class="text-uppercase font-weight-bold">Toggle</small></button>
 
-    <h2 class="display-4 text-white">All project</h2>
+    <h2 class="display-4 ">All project</h2>
 
 
 
     <fieldset>
         <legend>
-            <span class="text-white" style="font-size: large;">Project</span>
+            <span class="" style="font-size: large;">Project</span>
         </legend>
         <div class="chip-group" tabindex="-1" role="radiogroup" id="projectChip">
         </div>
     </fieldset>
     <fieldset>
         <legend>
-            <span class="text-white" style="font-size: large;">Version</span>
+            <span class="" style="font-size: large;">Version</span>
         </legend>
         <div class="chip-group" tabindex="-1" role="radiogroup" id="versionChip">
         </div>
@@ -51,7 +51,7 @@
 
     <!-- <div class="row">
         <div class="col-md-1">
-            <span class="text-white" style="font-size: large;">Project</span>
+            <span class="" style="font-size: large;">Project</span>
         </div>
         <div class="col-md-2">
             <select id="projectTab" class="form-select" style="width: fit-content;">
@@ -61,7 +61,7 @@
     <br>
     <div class="row">
         <div class="col-md-1">
-            <span class="text-white" style="font-size: large;">Version</span>
+            <span class="" style="font-size: large;">Version</span>
         </div>
         <div class="col-md-2">
             <select id="versionTab" class="form-select" style="width: fit-content;">
@@ -71,28 +71,28 @@
 
     <div class="separator"></div>
 
-    <div class="row text-white">
+    <div class="row ">
         <div class="col">
             <canvas id="myChart" style="width:100%;max-width:700px"></canvas>
         </div>
     </div>
-    <div class="row text-white">
+    <div class="row ">
         <div class="col-md-4">
-            <span class="text-white" style="font-size: medium;">Retention D1: </span><span id="retentionDay1"></span>
+            <span class="" style="font-size: medium;">Retention D1: </span><span id="retentionDay1"></span>
         </div>
         <div class="col-md-4">
-            <span class="text-white" style="font-size: medium;">Thời gian chơi trung bình:</span><span
+            <span class="" style="font-size: medium;">Thời gian chơi trung bình:</span><span
                 id="avgPlayTime"></span>
         </div>
         <div class="col-md-4">
-            <span class="text-white" style="font-size: medium;">Số lần chơi trung bình: </span><span
+            <span class="" style="font-size: medium;">Số lần chơi trung bình: </span><span
                 id="avgSession"></span>
         </div>
     </div>
 
     <div class="separator"></div>
 
-    <div class="row text-white">
+    <div class="row ">
         <div class="col">
             <div class="bg-white p-5 rounded shadow-sm">
                 <p style="color: black; word-break: break-word;" id="dataUser"></p>
@@ -157,10 +157,27 @@
         let ref = db.ref().orderByKey();
         ref.once('value', (snapshot) => {
             $('#loaderOverlay').hide();
-            const versions = Object.keys(snapshot.val());
-            console.log("get all data finished");
-            console.log("versions values is: ");
-            console.log(snapshot.val());
+            // const versions = Object.keys(snapshot.val());
+            // console.log("get all data finished");
+            // console.log("versions values is: ");
+            // console.log(snapshot.val());
+            let rawData = snapshot.val();
+            let versions = [];
+            let values = [];
+
+            console.log("raw data = ");
+            console.log(rawData);
+
+            for (const versionName in rawData) {
+              console.log(`${versionName}: ${rawData[versionName]}`);
+              let userdata = rawData[versionName]["userdata"];
+              console.log("get userdata for version " + versionName);
+              console.log(userdata);
+              console.log("userdata length = " + Object.keys(userdata).length);
+              versions.push(versionName);
+              values.push(Object.keys(userdata).length);
+            }
+
             // versions.forEach(function (item, index) {
             //     let htmlPattern = `<div class="chip chip-checkbox" aria-labelledby="${item}" tabindex="0" role="radio"
             //     aria-checked="false" onclick="getDataByVersion('${item}')">
@@ -168,10 +185,26 @@
             //     <span>${item}</span></div>`;
             //     $('#versionChip').append(htmlPattern);
             //     $('#loaderOverlay').hide();
-            // });
-        });
 
-        drawChartTest();
+            //     console.log("geting version = " + item.length);
+            //     values.push(item.length);
+            // });
+
+            // rawData.forEach(function (item, index) {
+            //     // let htmlPattern = `<div class="chip chip-checkbox" aria-labelledby="${item}" tabindex="0" role="radio"
+            //     // aria-checked="false" onclick="getDataByVersion('${item}')">
+            //     // <input type="radio" id="${item}" name="version" value="${item}"/>
+            //     // <span>${item}</span></div>`;
+            //     // $('#versionChip').append(htmlPattern);
+            //     // $('#loaderOverlay').hide();
+
+            //     console.log("geting version = " + item.length + " , data = " + item);
+            //     values.push(item.length);
+            // });
+
+            // drawChartTest("Thời gian chơi", versions);
+            drawChartTest("Số lượng user", versions, values);
+        });
     }
 
     function updateVersionOnlyOne(project) {
@@ -238,15 +271,15 @@
         });
     }
 
-    function drawChartTest(){
-      let labels = [];
-      let yValues = [];
+    function drawChartTest(title, versions, values){
+      // let labels = [];
+      // let yValues = [];
       let barColors = [];
       let colors = ["red", "orange", "green", "blue", "purple"];
 
-      for (let i = 0; i< 10; i++){
-        labels.push("pikachu " + i);
-        yValues.push(i);
+      for (let i = 0; i< versions.length; i++){
+        // labels.push("pikachu " + i);
+        // yValues.push(i);
         let colorIndex = i % colors.length;
         console.log("color index = " + colorIndex + " , colors[colorIndex] = " + colors[colorIndex]);
         barColors.push(colors[colorIndex]);
@@ -254,11 +287,11 @@
       new Chart("myChart", {
             type: "bar",
             data: {
-                labels: labels,
+                labels: versions,
                 datasets: [{
-                    label: 'Retention',
+                    label: title,
                     backgroundColor: barColors,
-                    data: yValues
+                    data: values
                 }]
             },
             options: {}
