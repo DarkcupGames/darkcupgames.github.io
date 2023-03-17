@@ -20,355 +20,400 @@
 
 <div class="page-content p-5" id="content">
 
-    <div class="loading style-2" id="loaderOverlay"><div class="loading-wheel"></div></div>
+  <div class="loading style-2" id="loaderOverlay">
+    <div class="loading-wheel"></div>
+  </div>
 
 
 
-    <!-- Toggle button -->
-    <button id="sidebarCollapse" type="button" class="btn btn-light bg-white rounded-pill shadow-sm px-4 mb-4"><i
-            class="fa fa-bars mr-2"></i><small class="text-uppercase font-weight-bold">Toggle</small></button>
+  <!-- Toggle button -->
+  <button id="sidebarCollapse" type="button" class="btn btn-light bg-white rounded-pill shadow-sm px-4 mb-4"><i
+      class="fa fa-bars mr-2"></i><small class="text-uppercase font-weight-bold">Toggle</small></button>
 
-    <h2 class="display-4 ">All project</h2>
-
-
-
-    <fieldset>
-        <legend>
-            <span class="" style="font-size: large;">Project</span>
-        </legend>
-        <div class="chip-group" tabindex="-1" role="radiogroup" id="projectChip">
-        </div>
-    </fieldset>
-    <fieldset>
-        <legend>
-            <span class="" style="font-size: large;">Version</span>
-        </legend>
-        <div class="chip-group" tabindex="-1" role="radiogroup" id="versionChip">
-        </div>
-    </fieldset>
+  <h2 class="display-4 ">All project</h2>
 
 
 
-    <!-- <div class="row">
-        <div class="col-md-1">
-            <span class="" style="font-size: large;">Project</span>
-        </div>
-        <div class="col-md-2">
-            <select id="projectTab" class="form-select" style="width: fit-content;">
-            </select>
-        </div>
+  <fieldset>
+    <legend>
+      <span class="" style="font-size: large;">Project</span>
+    </legend>
+    <div class="chip-group" tabindex="-1" role="radiogroup" id="projectChip">
     </div>
-    <br>
-    <div class="row">
-        <div class="col-md-1">
-            <span class="" style="font-size: large;">Version</span>
-        </div>
-        <div class="col-md-2">
-            <select id="versionTab" class="form-select" style="width: fit-content;">
-            </select>
-        </div>
-    </div> -->
-
-    <div class="separator"></div>
-
-    <div class="row ">
-        <div class="col">
-            <canvas id="myChart" style="width:100%;max-width:700px"></canvas>
-        </div>
+  </fieldset>
+  <fieldset>
+    <legend>
+      <span class="" style="font-size: large;">Version</span>
+    </legend>
+    <div class="chip-group" tabindex="-1" role="radiogroup" id="versionChip">
     </div>
-    <div class="row ">
-        <div class="col-md-4">
-            <span class="" style="font-size: medium;">Retention D1: </span><span id="retentionDay1"></span>
-        </div>
-        <div class="col-md-4">
-            <span class="" style="font-size: medium;">Thời gian chơi trung bình:</span><span
-                id="avgPlayTime"></span>
-        </div>
-        <div class="col-md-4">
-            <span class="" style="font-size: medium;">Số lần chơi trung bình: </span><span
-                id="avgSession"></span>
-        </div>
+  </fieldset>
+
+
+  <div class="separator"></div>
+
+  <div class="row ">
+    <div class="col">
+      <canvas id="chartNumberUser" style="width:100%;max-width:700px"></canvas>
     </div>
 
-    <div class="separator"></div>
-
-    <div class="row ">
-        <div class="col">
-            <div class="bg-white p-5 rounded shadow-sm">
-                <p style="color: black; word-break: break-word;" id="dataUser"></p>
-            </div>
-        </div>
+    <div class="col">
+      <canvas id="chartPlayTime" style="width:100%;max-width:700px"></canvas>
     </div>
+
+  </div>
+  <div class="row ">
+    <div class="col">
+      <canvas id="chartSessionCount" style="width:100%;max-width:700px"></canvas>
+    </div>
+
+    <div class="col">
+      <canvas id="chartPlayTimeAvg" style="width:100%;max-width:700px"></canvas>
+    </div>
+
+  </div>
+  <div class="row ">
+    <div class="col-md-4">
+      <span class="" style="font-size: medium;">Retention D1: </span><span id="retentionDay1"></span>
+    </div>
+    <div class="col-md-4">
+      <span class="" style="font-size: medium;">Thời gian chơi trung bình:</span><span id="avgPlayTime"></span>
+    </div>
+    <div class="col-md-4">
+      <span class="" style="font-size: medium;">Số lần chơi trung bình: </span><span id="avgSession"></span>
+    </div>
+  </div>
+
+  <div class="separator"></div>
+
+  <div class="row ">
+    <div class="col">
+      <div class="bg-white p-5 rounded shadow-sm">
+        <p style="color: black; word-break: break-word;" id="dataUser"></p>
+      </div>
+    </div>
+  </div>
 
 </div>
 <script>
-    var projectConfig = {};
-    var allData = [];
-    $(function () {
-        $('#loaderOverlay').hide();
-        // Check if the cookie exists or cookie already expried
-        if (document.cookie.indexOf("username") === -1) {
-            window.location.assign('/login');
-        }
-        // Sidebar toggle behavior
-        $('#sidebarCollapse').on('click', function () {
-            $('#sidebar, #content').toggleClass('active');
-        });
-        getData().then((data) => {
-            console.log(data);
-        }).catch((error) => {
-            console.error(error);
-        });
+  var projectConfig = {};
+  var allData = [];
+  var dicProjectDatas = {};
+
+  $(function () {
+    $('#loaderOverlay').hide();
+    // Check if the cookie exists or cookie already expried
+    if (document.cookie.indexOf("username") === -1) {
+      window.location.assign('/login');
+    }
+    // Sidebar toggle behavior
+    $('#sidebarCollapse').on('click', function () {
+      $('#sidebar, #content').toggleClass('active');
     });
+    getData().then((data) => {
+      console.log(data);
+    }).catch((error) => {
+      console.error(error);
+    });
+  });
 
-    async function getData() {
-        let defaultProject = '';
-        defaultDb.goOnline();
-        const snapshot = await databaseConfig.get();
-        console.log("get data!");
-        console.log(snapshot.toJSON());
-        let firstKey;
-        snapshot.forEach((childSnapshot) => {
-            if (!firstKey) {
-                firstKey = childSnapshot.key;
-            }
-            var keystr = childSnapshot.key;
-            var value = childSnapshot.val();
-            projectConfig[keystr] = value;
-            firebase.initializeApp(value, keystr);
-            defaultProject = keystr;
+  async function getData() {
+    let defaultProject = '';
+    defaultDb.goOnline();
+    const snapshot = await databaseConfig.get();
+    console.log("get data!");
+    console.log(snapshot.toJSON());
+    let firstKey;
+    snapshot.forEach((childSnapshot) => {
+      if (!firstKey) {
+        firstKey = childSnapshot.key;
+      }
+      var keystr = childSnapshot.key;
+      var value = childSnapshot.val();
+      projectConfig[keystr] = value;
+      firebase.initializeApp(value, keystr);
+      defaultProject = keystr;
 
-            let htmlPattern = `<div class="chip chip-checkbox" aria-labelledby="${keystr}" tabindex="0" role="radio"
+      let htmlPattern = `<div class="chip chip-checkbox" aria-labelledby="${keystr}" tabindex="0" role="radio"
                 aria-checked="false" onclick="updateVersion('${keystr}')">
                 <input type="radio" id="${keystr}" name="project" value="${keystr}"/>
                 <span>${keystr}</span></div>`;
-            $('#projectChip').append(htmlPattern);
-        });
-        return firstKey;
+      $('#projectChip').append(htmlPattern);
+    });
+    return firstKey;
+  }
+
+  function updateVersion(project) {
+    let rawData;
+
+    if (dicProjectDatas[project] != null) {
+      rawData = dicProjectDatas[project];
+      updateChartData(rawData);
+      return;
     }
 
-    function updateVersion(project) {
-        $('#loaderOverlay').show();
-        //alert(project);
-        $('#dataUser').text('');
-        $('#versionChip').children().remove()
-        const db = firebase.app(project).database();
-        db.goOnline();
-        let ref = db.ref().orderByKey();
-        ref.once('value', (snapshot) => {
-            $('#loaderOverlay').hide();
-            // const versions = Object.keys(snapshot.val());
-            // console.log("get all data finished");
-            // console.log("versions values is: ");
-            // console.log(snapshot.val());
-            let rawData = snapshot.val();
-            let versions = [];
-            let values = [];
+    $('#loaderOverlay').show();
+    $('#dataUser').text('');
+    $('#versionChip').children().remove()
+    const db = firebase.app(project).database();
+    db.goOnline();
+    let ref = db.ref().orderByKey();
 
-            console.log("raw data = ");
-            console.log(rawData);
+    ref.once('value', (snapshot) => {
+      $('#loaderOverlay').hide();
+      rawData = snapshot.val();
+      dicProjectDatas[project] = rawData;
+      updateChartData(rawData);
+    });
+  }
 
-            for (const versionName in rawData) {
-              console.log(`${versionName}: ${rawData[versionName]}`);
-              let userdata = rawData[versionName]["userdata"];
-              console.log("get userdata for version " + versionName);
-              console.log(userdata);
-              console.log("userdata length = " + Object.keys(userdata).length);
-              versions.push(versionName);
-              values.push(Object.keys(userdata).length);
-            }
+  let chartNumberUser;
+  let chartPlayTime;
+  let chartSessionCount;
+  let chartPlayTimeAvg;
 
-            // versions.forEach(function (item, index) {
-            //     let htmlPattern = `<div class="chip chip-checkbox" aria-labelledby="${item}" tabindex="0" role="radio"
-            //     aria-checked="false" onclick="getDataByVersion('${item}')">
-            //     <input type="radio" id="${item}" name="version" value="${item}"/>
-            //     <span>${item}</span></div>`;
-            //     $('#versionChip').append(htmlPattern);
-            //     $('#loaderOverlay').hide();
+  function updateChartData(rawData) {
+    let versions = [];
+    let versionHaveUsers = [];
+    let userCounts = [];
+    let playTimes = [];
+    let sessionCounts = [];
+    let playTimeEachSessions = [];
 
-            //     console.log("geting version = " + item.length);
-            //     values.push(item.length);
-            // });
+    console.log("raw data = ");
+    console.log(rawData);
 
-            // rawData.forEach(function (item, index) {
-            //     // let htmlPattern = `<div class="chip chip-checkbox" aria-labelledby="${item}" tabindex="0" role="radio"
-            //     // aria-checked="false" onclick="getDataByVersion('${item}')">
-            //     // <input type="radio" id="${item}" name="version" value="${item}"/>
-            //     // <span>${item}</span></div>`;
-            //     // $('#versionChip').append(htmlPattern);
-            //     // $('#loaderOverlay').hide();
+    for (const versionName in rawData) {
+      console.log(`${versionName}: ${rawData[versionName]}`);
+      let userdata = rawData[versionName]["userdata"];
+      console.log("get userdata for version " + versionName);
+      console.log(userdata);
+      console.log("userdata length = " + Object.keys(userdata).length);
+      calculateAll(userdata);
+      versions.push(versionName);
+      userCounts.push(userCount);
 
-            //     console.log("geting version = " + item.length + " , data = " + item);
-            //     values.push(item.length);
-            // });
+      if (userCount > 0) {
+        versionHaveUsers.push(versionName);
 
-            // drawChartTest("Thời gian chơi", versions);
-            drawChartTest("Số lượng user", versions, values);
-        });
-    }
-
-    function updateVersionOnlyOne(project) {
-        $('#loaderOverlay').show();
-        //alert(project);
-        $('#dataUser').text('');
-        $('#versionChip').children().remove()
-        const db = firebase.app(project).database();
-        db.goOnline();
-        let ref = db.ref().orderByKey();
-        ref.once('value', (snapshot) => {
-            $('#loaderOverlay').hide();
-            const versions = Object.keys(snapshot.val());
-            console.log("get all data finished");
-            console.log("versions values is: ");
-            console.log(snapshot.val());
-            // versions.forEach(function (item, index) {
-            //     let htmlPattern = `<div class="chip chip-checkbox" aria-labelledby="${item}" tabindex="0" role="radio"
-            //     aria-checked="false" onclick="getDataByVersion('${item}')">
-            //     <input type="radio" id="${item}" name="version" value="${item}"/>
-            //     <span>${item}</span></div>`;
-            //     $('#versionChip').append(htmlPattern);
-            //     $('#loaderOverlay').hide();
-            // });
-        });
-    }
-
-    // function interateAllData(){
-    //   console.log("this is interate all data");
-    //   let project = $('input[name=project]:checked').val();
-    //   const db = firebase.app(project).database();
-    //   db.goOnline();
-    //   let ref = db.ref().orderByKey();
-    //   ref.once('value', (snapshot) => {
-    //         const versions = Object.keys(snapshot.val());
-    //         versions.forEach(function (item, index) {
-    //             let htmlPattern = `<div class="chip chip-checkbox" aria-labelledby="${item}" tabindex="0" role="radio"
-    //             aria-checked="false" onclick="getDataByVersion('${item}')">
-    //             <input type="radio" id="${item}" name="version" value="${item}"/>
-    //             <span>${item}</span></div>`;
-    //             $('#versionChip').append(htmlPattern);
-    //             $('#loaderOverlay').hide();
-    //         });
-    //     });
-    // }
-
-    function getDataByVersion(version) {
-        allData = [];
-        // get data 1
-        let project = $('input[name=project]:checked').val();
-        const db = firebase.app(project).database();
-        db.goOnline();
-
-        db.ref().child(version).child("userdata").get().then((snapshot) => {
-            if (snapshot.exists()) {
-                $('#dataUser').text(JSON.stringify(snapshot.val()));
-                allData = snapshot.val();
-                drawChart();
-            } else {
-                console.log("Current have 0 record.");
-            }
-        }).catch((error) => {
-            console.error(error);
-        });
-    }
-
-    function drawChartTest(title, versions, values){
-      // let labels = [];
-      // let yValues = [];
-      let barColors = [];
-      let colors = ["red", "orange", "green", "blue", "purple"];
-
-      for (let i = 0; i< versions.length; i++){
-        // labels.push("pikachu " + i);
-        // yValues.push(i);
-        let colorIndex = i % colors.length;
-        console.log("color index = " + colorIndex + " , colors[colorIndex] = " + colors[colorIndex]);
-        barColors.push(colors[colorIndex]);
+        let playTimeEachUser = totalPlayTime / userCount / 60;
+        let sessionEachUser = totalSessionCount / userCount;
+        playTimes.push(playTimeEachUser);
+        sessionCounts.push(sessionEachUser);
+        playTimeEachSessions.push(playTimeEachUser / sessionEachUser);
       }
-      new Chart("myChart", {
-            type: "bar",
-            data: {
-                labels: versions,
-                datasets: [{
-                    label: title,
-                    backgroundColor: barColors,
-                    data: values
-                }]
-            },
-            options: {}
-      });
     }
 
-    function drawChart() {
-        var xValues = [];
-        var yValues = [];
-        var retentionValues = [];
-        var barColors = "blue";
-
-        for (let i = 0; i <= 7; i++) {
-            xValues.push("retention " + i);
-            retentionValues.push(0);
-        }
-
-        let retentionDay0 = 0;
-        let retentionDay1 = 0;
-        let totalPlayTime = 0;
-        let totalSessionCount = 0;
-        let userCount = 0;
-
-        for (const property in allData) {
-            var user = allData[property];
-            let isRealUser = user['installerName'] == 'com.android.vending';
-            if (isRealUser == false) continue;
-            userCount++;
-            let retention_type = user['retentionType'];
-            let today = 738550.4475819197
-            let timeSinceFirstPlay = Math.round(today - user["startPlayDay"]);
-
-            let bool0 = timeSinceFirstPlay > 0 && retention_type >= 0;
-            let bool1 = timeSinceFirstPlay > 1 && retention_type >= 1;
-
-            if (bool0) retentionDay0 += 1;
-            if (bool1) retentionDay1 += 1;
-
-            let info = property + " timeSinceFirstPlay = " + timeSinceFirstPlay + ", retention 0 = " + bool0;
-            if (bool1) info += ", retention 1 = " + bool1;
-            console.log(info);
-
-            let playTime = user["totalPlayTime"];
-            totalPlayTime += playTime;
-
-            let sessionCount = user["sessionCount"];
-            totalSessionCount += sessionCount;
-            // retentionDay0 += 1;
-            // retentionDay1 += 1;
-        }
-
-        retentionValues[0] = retentionDay0;
-        retentionValues[1] = retentionDay1;
-        console.log(retentionValues);
-
-        const div1 = document.getElementById("retentionDay1");
-        div1.innerText = (retentionDay1 / retentionDay0 * 100).toFixed(2) + "%";
-
-        const div2 = document.getElementById("avgPlayTime");
-        div2.innerText = (totalPlayTime / userCount / 60).toFixed(2) + " phút";
-
-        const div3 = document.getElementById("avgSession");
-        div3.innerText = (totalSessionCount / userCount).toFixed(2) + " lần";
-
-        new Chart("myChart", {
-            type: "bar",
-            data: {
-                labels: xValues,
-                datasets: [{
-                    label: 'Retention',
-                    backgroundColor: barColors,
-                    data: retentionValues
-                }]
-            },
-            options: {}
-        });
+    if (chartNumberUser != null){
+      chartNumberUser.destroy();
     }
+    if (chartPlayTime != null){
+      chartPlayTime.destroy();
+    }
+    if (chartSessionCount != null){
+      chartSessionCount.destroy();
+    }
+    if (chartPlayTimeAvg != null){
+      chartPlayTimeAvg.destroy();
+    }
+
+    chartNumberUser = drawChartTest("chartNumberUser", "Số lượng user", versions, userCounts);
+
+    chartPlayTime = drawChartTest("chartPlayTime", "Tổng thời gian chơi (phút)", versionHaveUsers, playTimes);
+    chartSessionCount = drawChartTest("chartSessionCount", "Số lượng session", versionHaveUsers, sessionCounts);
+    chartPlayTimeAvg = drawChartTest("chartPlayTimeAvg", "Thời gian chơi mỗi session", versionHaveUsers, playTimeEachSessions);
+  }
+
+  function getDataByVersion(version) {
+    allData = [];
+    // get data 1
+    let project = $('input[name=project]:checked').val();
+    const db = firebase.app(project).database();
+    db.goOnline();
+
+    db.ref().child(version).child("userdata").get().then((snapshot) => {
+      if (snapshot.exists()) {
+        $('#dataUser').text(JSON.stringify(snapshot.val()));
+        allData = snapshot.val();
+        drawChart();
+      } else {
+        console.log("Current have 0 record.");
+      }
+    }).catch((error) => {
+      console.error(error);
+    });
+  }
+
+  function drawChartTest(chartName, title, versions, values) {
+    let barColors = [];
+    let colors = ["red", "orange", "green", "blue", "purple"];
+
+    for (let i = 0; i < versions.length; i++) {
+      let colorIndex = i % colors.length;
+      console.log("color index = " + colorIndex + " , colors[colorIndex] = " + colors[colorIndex]);
+      barColors.push(colors[colorIndex]);
+    }
+    let chart = new Chart(chartName, {
+      type: "bar",
+      data: {
+        labels: versions,
+        datasets: [{
+          label: title,
+          backgroundColor: barColors,
+          data: values
+        }]
+      },
+      options: {}
+    });
+
+    return chart;
+  }
+
+  let retentionDay0 = 0;
+  let retentionDay1 = 0;
+  let totalPlayTime = 0;
+  let totalSessionCount = 0;
+  let userCount = 0;
+
+  function calculateAll(allData) {
+    // var xValues = [];
+    // var yValues = [];
+    // var retentionValues = [];
+    // var barColors = "blue";
+
+    // for (let i = 0; i <= 7; i++) {
+    //     xValues.push("retention " + i);
+    //     retentionValues.push(0);
+    // }
+    retentionDay0 = 0;
+    retentionDay1 = 0;
+    totalPlayTime = 0;
+    totalSessionCount = 0;
+    userCount = 0;
+
+    for (const property in allData) {
+      var user = allData[property];
+      let isRealUser = user['installerName'] == 'com.android.vending';
+      if (isRealUser == false) continue;
+      userCount++;
+
+      // let retention_type = user['retentionType'];
+      // let today = 738550.4475819197
+      // let timeSinceFirstPlay = Math.round(today - user["startPlayDay"]);
+
+      // let bool0 = timeSinceFirstPlay > 0 && retention_type >= 0;
+      // let bool1 = timeSinceFirstPlay > 1 && retention_type >= 1;
+
+      // if (bool0) retentionDay0 += 1;
+      // if (bool1) retentionDay1 += 1;
+
+      // let info = property + " timeSinceFirstPlay = " + timeSinceFirstPlay + ", retention 0 = " + bool0;
+      // if (bool1) info += ", retention 1 = " + bool1;
+      // console.log(info);
+
+      let playTime = user["totalPlayTime"];
+      totalPlayTime += playTime;
+
+      let sessionCount = user["sessionCount"];
+      totalSessionCount += sessionCount;
+    }
+
+    // retentionValues[0] = retentionDay0;
+    // retentionValues[1] = retentionDay1;
+    // console.log(retentionValues);
+
+    // const div1 = document.getElementById("retentionDay1");
+    // div1.innerText = (retentionDay1 / retentionDay0 * 100).toFixed(2) + "%";
+
+    // const div2 = document.getElementById("avgPlayTime");
+    // div2.innerText = (totalPlayTime / userCount / 60).toFixed(2) + " phút";
+
+    // const div3 = document.getElementById("avgSession");
+    // div3.innerText = (totalSessionCount / userCount).toFixed(2) + " lần";
+
+    // new Chart("myChart", {
+    //     type: "bar",
+    //     data: {
+    //         labels: xValues,
+    //         datasets: [{
+    //             label: 'Retention',
+    //             backgroundColor: barColors,
+    //             data: retentionValues
+    //         }]
+    //     },
+    //     options: {}
+    // });
+  }
+
+  function drawChart() {
+    var xValues = [];
+    var yValues = [];
+    var retentionValues = [];
+    var barColors = "blue";
+
+    for (let i = 0; i <= 7; i++) {
+      xValues.push("retention " + i);
+      retentionValues.push(0);
+    }
+
+    let retentionDay0 = 0;
+    let retentionDay1 = 0;
+    let totalPlayTime = 0;
+    let totalSessionCount = 0;
+    let userCount = 0;
+
+    for (const property in allData) {
+      var user = allData[property];
+      let isRealUser = user['installerName'] == 'com.android.vending';
+      if (isRealUser == false) continue;
+      userCount++;
+      let retention_type = user['retentionType'];
+      let today = 738550.4475819197
+      let timeSinceFirstPlay = Math.round(today - user["startPlayDay"]);
+
+      let bool0 = timeSinceFirstPlay > 0 && retention_type >= 0;
+      let bool1 = timeSinceFirstPlay > 1 && retention_type >= 1;
+
+      if (bool0) retentionDay0 += 1;
+      if (bool1) retentionDay1 += 1;
+
+      let info = property + " timeSinceFirstPlay = " + timeSinceFirstPlay + ", retention 0 = " + bool0;
+      if (bool1) info += ", retention 1 = " + bool1;
+      console.log(info);
+
+      let playTime = user["totalPlayTime"];
+      totalPlayTime += playTime;
+
+      let sessionCount = user["sessionCount"];
+      totalSessionCount += sessionCount;
+    }
+
+    retentionValues[0] = retentionDay0;
+    retentionValues[1] = retentionDay1;
+    console.log(retentionValues);
+
+    const div1 = document.getElementById("retentionDay1");
+    div1.innerText = (retentionDay1 / retentionDay0 * 100).toFixed(2) + "%";
+
+    const div2 = document.getElementById("avgPlayTime");
+    div2.innerText = (totalPlayTime / userCount / 60).toFixed(2) + " phút";
+
+    const div3 = document.getElementById("avgSession");
+    div3.innerText = (totalSessionCount / userCount).toFixed(2) + " lần";
+
+    new Chart("myChart", {
+      type: "bar",
+      data: {
+        labels: xValues,
+        datasets: [{
+          label: 'Retention',
+          backgroundColor: barColors,
+          data: retentionValues
+        }]
+      },
+      options: {}
+    });
+  }
 </script>
 
 </html>
