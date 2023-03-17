@@ -15,8 +15,10 @@
       // Check if user is already logged in
       var cookies = document.cookie.split('; ');
       var isLoggedIn = false;
+      console.log("cookie length = " + cookies.length);
       for (var i = 0; i < cookies.length; i++) {
         var cookie = cookies[i].split('=');
+        console.log("cookie name = " + cookie[0].length);
         if (cookie[0] === 'username') {
           isLoggedIn = true;
           break;
