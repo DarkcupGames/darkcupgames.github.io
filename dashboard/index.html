@@ -94,6 +94,21 @@
 
   <div class="row ">
     <div class="col">
+      <canvas id="chartUserByDay" style="width:100%;max-width:700px"></canvas>
+    </div>
+<!-- 
+    <div class="col">
+      <canvas id="chartPlayTime" style="width:100%;max-width:700px"></canvas>
+    </div>
+    <div class="col">
+      <canvas id="chartSessionCount" style="width:100%;max-width:700px"></canvas>
+    </div> -->
+  </div>
+  <div class="row ">
+
+
+  <div class="row ">
+    <div class="col">
       <div class="bg-white p-5 rounded shadow-sm">
         <p style="color: black; word-break: break-word;" id="dataUser"></p>
       </div>
@@ -142,7 +157,7 @@
       defaultProject = keystr;
 
       let htmlPattern = `<div class="chip chip-checkbox" aria-labelledby="${keystr}" tabindex="0" role="radio"
-                aria-checked="false" onclick="updateVersion('${keystr}')">
+                aria-checked="false" onclick="onSelectProject('${keystr}')">
                 <input type="radio" id="${keystr}" name="project" value="${keystr}"/>
                 <span>${keystr}</span></div>`;
       $('#projectChip').append(htmlPattern);
@@ -150,25 +165,12 @@
     return firstKey;
   }
 
-  // function showVersionChip(rawData) {
-  //   const versions = Object.keys(rawData);
-  //   versions.forEach(function (item, index) {
-  //     let htmlPattern = `<div class="chip chip-checkbox" aria-labelledby="${item}" tabindex="0" role="radio"
-  //               aria-checked="false" onclick="getDataByVersion('${item}')">
-  //               <input type="radio" id="${item}" name="version" value="${item}"/>
-  //               <span>${item}</span>
-  //           </div>`;
-  //     $('#versionChip').append(htmlPattern);
-  //     $('#loaderOverlay').hide();
-  //   });
-  // }
-
-  function updateVersion(project) {
+  function onSelectProject(project) {
     let rawData;
 
     if (dicProjectDatas[project] != null) {
       rawData = dicProjectDatas[project];
-      updateChartData(rawData);
+      updateProjectData(rawData);
       return;
     }
 
@@ -181,16 +183,11 @@
       $('#loaderOverlay').hide();
       rawData = snapshot.val();
       dicProjectDatas[project] = rawData;
-      updateChartData(rawData);
+      updateProjectData(rawData);
     });
   }
 
-  // let chartNumberUser;
-  // let chartPlayTime;
-  // let chartSessionCount;
-  // let chartPlayTimeAvg;
-
-  function updateChartData(rawData) {
+  function updateProjectData(rawData) {
     let versions = [];
     let versionHaveUsers = [];
     let userCounts = [];
@@ -224,62 +221,46 @@
         playTimeEachSessions.push((playTimeEachUser / sessionEachUser).toFixed(2));
 
         let htmlPattern = `<div class="chip chip-checkbox" aria-labelledby="${versionName}" tabindex="0" role="radio"
-                aria-checked="false" onclick="getDataByVersion('${versionName}')">
+                aria-checked="false" onclick="updateVersionData('${versionName}')">
                 <input type="radio" id="${versionName}" name="version" value="${versionName}"/>
                 <span>${versionName}</span>
             </div>`;
         $('#versionChip').append(htmlPattern);
       }
     }
+    drawChart("chartNumberUser", "Số lượng user", versions, userCounts);
 
-    // if (chartNumberUser != null){
-    //   chartNumberUser.destroy();
-    // }
-    // if (chartPlayTime != null){
-    //   chartPlayTime.destroy();
-    // }
-    // if (chartSessionCount != null){
-    //   chartSessionCount.destroy();
-    // }
-    // if (chartPlayTimeAvg != null){
-    //   chartPlayTimeAvg.destroy();
-    // }
-
-    drawChartTest("chartNumberUser", "Số lượng user", versions, userCounts);
-
-    drawChartTest("chartPlayTime", "Tổng thời gian chơi (phút)", versionHaveUsers, playTimes);
-    drawChartTest("chartSessionCount", "Số lượng session", versionHaveUsers, sessionCounts);
-    drawChartTest("chartPlayTimeAvg", "Thời gian chơi mỗi session", versionHaveUsers, playTimeEachSessions);
+    drawChart("chartPlayTime", "Tổng thời gian chơi (phút)", versionHaveUsers, playTimes);
+    drawChart("chartSessionCount", "Số lượng session", versionHaveUsers, sessionCounts);
+    drawChart("chartPlayTimeAvg", "Thời gian chơi mỗi session", versionHaveUsers, playTimeEachSessions);
   }
 
-  function getDataByVersion(version) {
-    allData = [];
-    // get data 1
+  function updateVersionData(version) {
     let project = $('input[name=project]:checked').val();
-    const db = firebase.app(project).database();
-    db.goOnline();
+    let versionData = dicProjectDatas[project][version]["userdata"];
+    let str = "";
 
-    db.ref().child(version).child("userdata").get().then((snapshot) => {
-      if (snapshot.exists()) {
-        $('#dataUser').text(JSON.stringify(snapshot.val()));
-        allData = snapshot.val();
-        drawChart();
-      } else {
-        console.log("Current have 0 record.");
-      }
-    }).catch((error) => {
-      console.error(error);
-    });
+    str += "this is pikachu\n";
+    console.log("this is verrsion data");
+    console.log(versionData);
+    
+    for (const userId in versionData) {
+      let words = userId.split("_");
+      console.log(words[0]);
+      str += words[0];
+    }
+    $('#dataUser').text(JSON.stringify(str));
+    
   }
 
-  function drawChartTest(chartName, title, versions, values) {
+  function drawChart(chartName, title, columnNames, values) {
     if (dicCharts[chartName] != null) {
       dicCharts[chartName].destroy();
     }
     let barColors = [];
     let colors = ["red", "orange", "green", "blue", "purple"];
 
-    for (let i = 0; i < versions.length; i++) {
+    for (let i = 0; i < columnNames.length; i++) {
       let colorIndex = i % colors.length;
       console.log("color index = " + colorIndex + " , colors[colorIndex] = " + colors[colorIndex]);
       barColors.push(colors[colorIndex]);
@@ -287,7 +268,7 @@
     let chart = new Chart(chartName, {
       type: "bar",
       data: {
-        labels: versions,
+        labels: columnNames,
         datasets: [{
           label: title,
           backgroundColor: barColors,
