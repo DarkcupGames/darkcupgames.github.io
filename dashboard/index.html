@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <div id="navBar"></div>
 
-<div class="page-content p-5" id="content">
+<div class="page-content p-3  " id="content">
 
   <div class="loading style-2" id="loaderOverlay">
     <div class="loading-wheel"></div>
@@ -30,14 +30,10 @@
   <button id="sidebarCollapse" type="button" class="btn btn-light bg-white rounded-pill shadow-sm px-4 mb-4"><i
       class="fa fa-bars mr-2"></i><small class="text-uppercase font-weight-bold">Toggle</small></button>
 
-  <h2 class="display-4 ">All project</h2>
-
-
-
   <fieldset>
-    <legend>
+    <!-- <legend>
       <span class="" style="font-size: large;">Project</span>
-    </legend>
+    </legend> -->
     <div class="chip-group" tabindex="-1" role="radiogroup" id="projectChip">
     </div>
   </fieldset>
@@ -60,15 +56,23 @@
     <div class="col">
       <canvas id="chartPlayTime" style="width:100%;max-width:700px"></canvas>
     </div>
-
-  </div>
-  <div class="row ">
     <div class="col">
       <canvas id="chartSessionCount" style="width:100%;max-width:700px"></canvas>
     </div>
+  </div>
+  <div class="row ">
+
 
     <div class="col">
       <canvas id="chartPlayTimeAvg" style="width:100%;max-width:700px"></canvas>
+    </div>
+
+    <div class="col">
+      <!-- <canvas id="chartPlayTimeAvg" style="width:100%;max-width:700px"></canvas> -->
+    </div>
+
+    <div class="col">
+      <!-- <canvas id="chartPlayTimeAvg" style="width:100%;max-width:700px"></canvas> -->
     </div>
 
   </div>
@@ -193,7 +197,7 @@
       versions.push(versionName);
       userCounts.push(userCount);
 
-      if (userCount > 0) {
+      if (userCount >= MIN_NUMBER_USER_ANALYTICS) {
         versionHaveUsers.push(versionName);
 
         let playTimeEachUser = totalPlayTime / userCount / 60;
@@ -269,6 +273,7 @@
     return chart;
   }
 
+  const MIN_NUMBER_USER_ANALYTICS = 10;
   let retentionDay0 = 0;
   let retentionDay1 = 0;
   let totalPlayTime = 0;
