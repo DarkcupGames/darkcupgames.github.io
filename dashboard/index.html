@@ -104,9 +104,21 @@
       <canvas id="chartSessionCount" style="width:100%;max-width:700px"></canvas>
     </div> -->
   </div>
+
   <div class="row ">
+    <div class="col">
+      <canvas id="chartLanguage" style="width:100%;"></canvas>
+    </div>
+<!-- 
+    <div class="col">
+      <canvas id="chartPlayTime" style="width:100%;max-width:700px"></canvas>
+    </div>
+    <div class="col">
+      <canvas id="chartSessionCount" style="width:100%;max-width:700px"></canvas>
+    </div> -->
+  </div>
 
-
+  <div class="row ">
   <div class="row ">
     <div class="col">
       <div class="bg-white p-5 rounded shadow-sm">
@@ -245,21 +257,37 @@
     console.log(versionData);
 
     let dicUserDate = {};
+    let dicLanguage = {};
     
     for (const userId in versionData) {
+      let user = versionData[userId];
+      let isRealUser = user['installerName'] == 'com.android.vending';
+      if (isRealUser == false) continue;
+
       let words = userId.split("_");
       console.log(words[0]);
       str += words[0];
 
-      let date = words[0];
-      if (dicUserDate[date] == null){
-        dicUserDate[date] = 1;
-      } else {
-        dicUserDate[date] += 1;
-      }
+      count(dicUserDate, words[0]);
+      count(dicLanguage, user["language"]);
+      // let date = words[0];
+      // if (dicUserDate[date] == null){
+      //   dicUserDate[date] = 1;
+      // } else {
+      //   dicUserDate[date] += 1;
+      // }
     }
     drawChartByDictionary("chartUserByDay","Số user mới theo ngày", dicUserDate);
+    drawChartByDictionary("chartLanguage", "Ngôn ngữ", dicLanguage);
     $('#dataUser').text(JSON.stringify(str));
+  }
+
+  function count(dic, key){
+    if (dic[key] == null){
+      dic[key] = 1;
+    } else {
+      dic[key]++;
+    }
   }
 
   function drawChartByDictionary(chartName, title, dic){
