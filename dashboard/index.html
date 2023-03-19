@@ -93,9 +93,7 @@
   </fieldset>
 
   <div class="row ">
-    <div class="col">
-      <canvas id="chartUserByDay" style="width:100%;"></canvas>
-    </div>
+    
 <!-- 
     <div class="col">
       <canvas id="chartPlayTime" style="width:100%;max-width:700px"></canvas>
@@ -105,17 +103,33 @@
     </div> -->
   </div>
 
+
   <div class="row ">
     <div class="col">
-      <canvas id="chartLanguage" style="width:100%;"></canvas>
+      <canvas id="chartRetention" style="width:100%;max-width:700px"></canvas>
     </div>
-<!-- 
+    
     <div class="col">
-      <canvas id="chartPlayTime" style="width:100%;max-width:700px"></canvas>
+      <canvas id="chartRetentionCohort" style="width:100%;max-width:700px"></canvas>
     </div>
+
     <div class="col">
-      <canvas id="chartSessionCount" style="width:100%;max-width:700px"></canvas>
-    </div> -->
+      <canvas id="chartRetentionPercent" style="width:100%;max-width:700px"></canvas>
+    </div>
+  </div>
+
+  <div class="row ">
+    <div class="col">
+      <canvas id="chartUserByDay" style="width:100%;max-width:700px"></canvas>
+    </div>
+    
+    <div class="col">
+      <canvas id="chartLanguage" style="width:100%;max-width:700px"></canvas>
+    </div>
+
+    <div class="col">
+      <canvas id="chartLanguagePlayTime" style="width:100%;max-width:700px"></canvas>
+    </div>
   </div>
 
   <div class="row ">
@@ -245,6 +259,11 @@
     drawChart("chartPlayTime", "Tổng thời gian chơi (phút)", versionHaveUsers, playTimes);
     drawChart("chartSessionCount", "Số lượng session", versionHaveUsers, sessionCounts);
     drawChart("chartPlayTimeAvg", "Thời gian chơi mỗi session", versionHaveUsers, playTimeEachSessions);
+
+    // if (versionHaveUsers.length > 0){
+    //   let newestVersion = versionHaveUsers[versionHaveUsers.length - 1];
+    //   updateVersionData(newestVersion);
+    // }
   }
 
   function updateVersionData(version) {
@@ -258,6 +277,10 @@
 
     let dicUserDate = {};
     let dicLanguage = {};
+    let dicLanguagePlayTime = {};
+    let dicRetention = {};
+    let dicRetentionCohort = {};
+    let dicRetentionPercent = {};
     
     for (const userId in versionData) {
       let user = versionData[userId];
@@ -270,15 +293,40 @@
 
       count(dicUserDate, words[0]);
       count(dicLanguage, user["language"]);
-      // let date = words[0];
-      // if (dicUserDate[date] == null){
-      //   dicUserDate[date] = 1;
-      // } else {
-      //   dicUserDate[date] += 1;
-      // }
+      add(dicLanguagePlayTime, user["language"], user["totalPlayTime"]);
+      count(dicRetention, user["retentionType"]);
+    }
+    for (const language in dicLanguagePlayTime) {
+      let userCount = dicLanguage[language];
+      console.log("user count for " + language + " is " + userCount);
+      if (userCount == 0) {
+        dicLanguagePlayTime[language] = 0;
+      }
+      else {
+        console.log("dicLanguagePlayTime[language] = " + dicLanguagePlayTime[language]);
+        console.log("dicLanguagePlayTime / 60 / userCount = " + (dicLanguagePlayTime[language] / 60 / userCount));
+        dicLanguagePlayTime[language] = (dicLanguagePlayTime[language] / 60 / userCount).toFixed(2);
+      }
+    }
+    for(let i = 0; i <=30; i++){
+      console.log("checking retention " + i);
+      let sum = 0;
+      for (const retentionType in dicRetention) {
+        console.log("retentionType " + retentionType + " = " + dicRetention[retentionType]);
+        
+        if (retentionType >= i){
+          sum += Number(dicRetention[retentionType]);
+        }
+      }
+      dicRetentionCohort[i] = sum;
+      dicRetentionPercent[i] = (dicRetentionCohort[i] / dicRetentionCohort[0] * 100).toFixed(2);
     }
     drawChartByDictionary("chartUserByDay","Số user mới theo ngày", dicUserDate);
-    drawChartByDictionary("chartLanguage", "Ngôn ngữ", dicLanguage);
+    drawChartByDictionary("chartLanguage", "Số user theo ngôn ngữ", dicLanguage);
+    drawChartByDictionary("chartLanguagePlayTime", "Thời gian chơi theo từng ngôn ngữ (phút)", dicLanguagePlayTime);
+    drawChartByDictionary("chartRetention", "Retention user", dicRetention);
+    drawChartByDictionary("chartRetentionCohort", "Retention user by cohort", dicRetentionCohort);
+    drawChartByDictionary("chartRetentionPercent", "Retention user by cohort (%)", dicRetentionPercent);
     $('#dataUser').text(JSON.stringify(str));
   }
 
@@ -287,6 +335,16 @@
       dic[key] = 1;
     } else {
       dic[key]++;
+    }
+  }
+
+  function add(dic, key, value){
+    if (dic[key] == null){
+      console.log("set key = " + key + " , value = " + value);
+      dic[key] = value;
+    } else {
+      dic[key] += value;
+      console.log("add key = " + key + " , value = " + value + ", total value = " + dic[key]);
     }
   }
 
