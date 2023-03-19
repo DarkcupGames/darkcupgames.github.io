@@ -17,6 +17,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
     <script src="../js/firebaseDefaultConfig.js"></script>
     <!-- Your Firebase configuration details -->
     <!-- CSS styles for the login form -->
@@ -80,13 +81,19 @@
                 event.preventDefault();
                 var username = $("#username").val();
                 var password = $("#password").val();
+                console.log("username = " + username);
+                console.log("password = " + password);
+                console.log("md5 password = " + md5(password));
+
                 if (username != '' && password != '') {
                     var usersRef = defaultDb.ref("users");
                     usersRef.child(username).once("value")
                         .then(function (snapshot) {
                             if (snapshot.exists()) {
                                 var user = snapshot.val();
-                                if (user.pwd === password) {
+                                console.log("get userdata from database");
+                                console.log("current user.pwd = " + user.pwd);
+                                if (user.pwd ===md5(password)) {
                                     // Store user data in a cookie
                                     var expirationDate = new Date();
                                     expirationDate.setDate(expirationDate.getDate() + 7); // expires in 7 days

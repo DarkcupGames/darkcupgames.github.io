@@ -25,31 +25,41 @@
 
 <body>
     <div id="navBar"></div>
-    <div class="page-content p-5" id="content">
+    <div class="page-content p-5" id="content" style="display:none">
         <!-- Toggle button -->
-        <button id="sidebarCollapse" type="button" class="btn btn-light bg-white rounded-pill shadow-sm px-4 mb-4"><i
-                class="fa fa-bars mr-2"></i><small class="text-uppercase font-weight-bold">Toggle</small></button>
-        <h2 class="display-4 text-white">Thông tin cá nhân</h2>
+        <!-- <button id="sidebarCollapse" type="button" class="btn btn-light bg-white rounded-pill shadow-sm px-4 mb-4"><i
+                class="fa fa-bars mr-2"></i><small class="text-uppercase font-weight-bold">Toggle</small></button> -->
+        
         <div class="separator"></div>
+        <!-- <h3 class="display-4">Timekeeping</h3> -->
         <div class="row text-white">
-            <div class="col">
-                <div class="bg-white p-5 rounded shadow-sm">
+            <div class="col" width="100%">
+                <!-- <iframe width="100%" height="250px" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ8Q0T4q1f-ZswwF1UN8C6bL3kOv0NxM9xJVjNd-9pJ6w_VgrC0raucLGp6hj_2DCwdH9XZjMl-Qa7/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false"></iframe> -->
+                <iframe width="100%" height="250px" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ8Q0T4q1f-ZswwF1UN8C6bL3kOv0NxM9xJVjNd-9pJ6w_VgrC0raucLGp6hj_2DCwdH9XZjMl-Qa7/pubhtml?widget=true&amp;headers=false"></iframe>
+                <!-- <div class="bg-white p-5 rounded shadow-sm">
+                    
                     <p style="color: black; word-break: break-word;" id="dataUser"></p>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>
-
+    
 </body>
 
 <script>
-        $(function () {
-            let userRef = defaultDb.ref('users/' + document.cookie.split('; ')[0].split('=')[1]);
-            userRef.get().then((snapshot) => {
-                //console.log(snapshot.val());
-                $('#dataUser').text(JSON.stringify(snapshot.val()));
-            });
+    $(function () {
+        let userRef = defaultDb.ref('users/' + document.cookie.split('; ')[0].split('=')[1]);
+        userRef.get().then((snapshot) => {
+            //console.log(snapshot.val());
+            let user = snapshot.val();
+            let role = user["role"];
+            if (role != "member"){
+                $("#content").text("Area reserved for members");
+            }
+            $("#content").show();
+            // $('#dataUser').text(JSON.stringify(snapshot.val()));
         });
+    });
 </script>
 
 </html>
