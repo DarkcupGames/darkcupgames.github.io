@@ -93,14 +93,6 @@
   </fieldset>
 
   <div class="row ">
-    
-<!-- 
-    <div class="col">
-      <canvas id="chartPlayTime" style="width:100%;max-width:700px"></canvas>
-    </div>
-    <div class="col">
-      <canvas id="chartSessionCount" style="width:100%;max-width:700px"></canvas>
-    </div> -->
   </div>
 
 
@@ -161,6 +153,34 @@
 
     <div class="col">
       <canvas id="chartLanguagePlayTime" style="width:100%;max-width:700px"></canvas>
+    </div>
+  </div>
+
+  <fieldset>
+    <legend>
+      <span class="" style="font-size: large;">Finance</span>
+    </legend>
+    <!-- <div class="chip-group" tabindex="-1" role="radiogroup" id="versionChip"> -->
+    <!-- </div> -->
+  </fieldset>
+
+  <div class="row">
+    <span style="font-size: medium;">Input ads spend: </span>
+    <div class="col">
+      <input id="inputAdSpend" value="0" />
+    </div>
+  </div>
+
+  <div class="row">
+    <span style="font-size: medium;">Input Revenue: </span>
+    <div class="col">
+      <input id="inputRevenue" value="0" />
+    </div>
+  </div>
+  <br>
+  <div class="row">
+    <div class="col">
+      <button id="calculate" class="btn btn-primary" onclick=calculateRevenue()>Tính toán</button>
     </div>
   </div>
 
@@ -246,13 +266,20 @@
     });
   }
 
+  let versions = [];
+  let versionHaveUsers = [];
+  let userCounts = [];
+  let playTimes = [];
+  let sessionCounts = [];
+  let playTimeEachSessions = [];
+
   function updateProjectData(rawData) {
-    let versions = [];
-    let versionHaveUsers = [];
-    let userCounts = [];
-    let playTimes = [];
-    let sessionCounts = [];
-    let playTimeEachSessions = [];
+    versions = [];
+    versionHaveUsers = [];
+    userCounts = [];
+    playTimes = [];
+    sessionCounts = [];
+    playTimeEachSessions = [];
 
     console.log("raw data = ");
     console.log(rawData);
@@ -299,7 +326,21 @@
     // }
   }
 
+  let dicUserDate = {};
+  let dicLanguage = {};
+  let dicLanguagePlayTime = {};
+  let dicRetention = {};
+  let dicRetentionCohort = {};
+  let dicRetentionPercent = {};
+
   function updateVersionData(version) {
+    dicUserDate = {};
+    dicLanguage = {};
+    dicLanguagePlayTime = {};
+    dicRetention = {};
+    dicRetentionCohort = {};
+    dicRetentionPercent = {};
+
     let project = $('input[name=project]:checked').val();
     let versionData = dicProjectDatas[project][version]["userdata"];
     let str = "";
@@ -307,13 +348,6 @@
     str += "this is pikachu\n";
     console.log("this is verrsion data");
     console.log(versionData);
-
-    let dicUserDate = {};
-    let dicLanguage = {};
-    let dicLanguagePlayTime = {};
-    let dicRetention = {};
-    let dicRetentionCohort = {};
-    let dicRetentionPercent = {};
     
     for (const userId in versionData) {
       let user = versionData[userId];
@@ -383,6 +417,20 @@
       dic[key] += value;
       console.log("add key = " + key + " , value = " + value + ", total value = " + dic[key]);
     }
+  }
+
+  function calculateRevenue(){
+    let adSpend = $("#inputAdSpend").val();
+    console.log("ad spend = " + adSpend);
+    let totalRevenue = $("#inputRevenue").val();
+    console.log("total revenue = " + totalRevenue);
+    console.log("user count = " + dicRetentionCohort[0]);
+    let revenuePerUser = totalRevenue / dicRetentionCohort[0];
+    console.log("revenue per user = " + revenuePerUser.toFixed(2));
+    console.log("money spend: " + adSpend);
+    let userCPI = adSpend / dicRetentionCohort[0];
+    console.log("user CPI = " + userCPI.toFixed(2));
+    console.log("revenue per CPI = " + (revenuePerUser / userCPI * 100).toFixed(2) + "%");
   }
 
   function drawChartByDictionary(chartName, title, dic){
