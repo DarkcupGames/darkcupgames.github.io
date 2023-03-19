@@ -105,9 +105,7 @@
 
 
   <div class="row ">
-    <div class="col">
-      <canvas id="chartRetention" style="width:100%;max-width:700px"></canvas>
-    </div>
+    
     
     <div class="col">
       <canvas id="chartRetentionCohort" style="width:100%;max-width:700px"></canvas>
@@ -115,6 +113,40 @@
 
     <div class="col">
       <canvas id="chartRetentionPercent" style="width:100%;max-width:700px"></canvas>
+    </div>
+
+    <div class="col">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">1</th>
+            <td>Retention D1</td>
+            <td><span id="retentionD1">30%</span></td>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <td>Retention D3</td>
+            <td><span id="retentionD3">30%</span></td>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <td>Retention D7</td>
+            <td><span id="retentionD7">30%</span></td>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <td>Retention D30</td>
+            <td><span id="retentionD30">30%</span></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -133,13 +165,14 @@
   </div>
 
   <div class="row ">
-  <div class="row ">
+
+  <!-- <div class="row ">
     <div class="col">
       <div class="bg-white p-5 rounded shadow-sm">
         <p style="color: black; word-break: break-word;" id="dataUser"></p>
       </div>
     </div>
-  </div>
+  </div> -->
 
 </div>
 <script>
@@ -224,7 +257,7 @@
     console.log("raw data = ");
     console.log(rawData);
 
-    $('#dataUser').text('');
+    // $('#dataUser').text('');
     $('#versionChip').children().remove();
 
     for (const versionName in rawData) {
@@ -327,7 +360,11 @@
     drawChartByDictionary("chartRetention", "Retention user", dicRetention);
     drawChartByDictionary("chartRetentionCohort", "Retention user by cohort", dicRetentionCohort);
     drawChartByDictionary("chartRetentionPercent", "Retention user by cohort (%)", dicRetentionPercent);
-    $('#dataUser').text(JSON.stringify(str));
+    $('#retentionD1').text(dicRetentionPercent[1] + "%");
+    $('#retentionD3').text(dicRetentionPercent[3] + "%");
+    $('#retentionD7').text(dicRetentionPercent[7] + "%");
+    $('#retentionD30').text(dicRetentionPercent[30] + "%");
+    // $('#dataUser').text(JSON.stringify(str));
   }
 
   function count(dic, key){
