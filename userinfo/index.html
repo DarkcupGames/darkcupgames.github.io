@@ -54,7 +54,9 @@
             let user = snapshot.val();
             let role = user["role"];
             if (role != "member"){
-                $("#content").text("Area reserved for members");
+              $("#content").text("Area reserved for members");
+            } else {
+              $("#content").text("Build not finished yet!");
             }
             $("#content").show();
             // $('#dataUser').text(JSON.stringify(snapshot.val()));
