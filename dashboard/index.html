@@ -96,6 +96,14 @@
   </div>
 
 
+  <fieldset>
+    <legend>
+      <span class="" style="font-size: large;">Retention and Language</span>
+    </legend>
+    <!-- <div class="chip-group" tabindex="-1" role="radiogroup" id="versionChip"> -->
+    <!-- </div> -->
+  </fieldset>
+
   <div class="row ">
     
     
@@ -166,6 +174,34 @@
 
   <div class="row ">
     <div class="col">
+      <canvas id="chartRevenue" style="width:100%;max-width:700px"></canvas>
+    </div>
+
+    <div class="col">
+      <canvas id="chartRevenuePerUser" style="width:100%;max-width:700px"></canvas>
+    </div>
+
+    <div class="col">
+      <canvas id="chartImpressionPerUser" style="width:100%;max-width:700px"></canvas>
+    </div>
+  </div>
+
+  <div class="row ">
+    <div class="col">
+      <canvas id="chartImpressionPerSession" style="width:100%;max-width:700px"></canvas>
+    </div>
+
+    <div class="col">
+      <!-- <canvas id="chartRevenuePerUser" style="width:100%;max-width:700px"></canvas> -->
+    </div>
+
+    <div class="col">
+      <!-- <canvas id="chartImpressionPerUser" style="width:100%;max-width:700px"></canvas> -->
+    </div>
+  </div>
+
+  <div class="row ">
+    <div class="col">
       <div class="row">
         <span style="font-size: medium;">Input ads spend: </span>
         <div class="col">
@@ -231,13 +267,7 @@
 
   <div class="row ">
 
-  <!-- <div class="row ">
-    <div class="col">
-      <div class="bg-white p-5 rounded shadow-sm">
-        <p style="color: black; word-break: break-word;" id="dataUser"></p>
-      </div>
-    </div>
-  </div> -->
+  
 
 </div>
 <script>
@@ -393,7 +423,7 @@
     str += "this is pikachu\n";
     console.log("this is verrsion data");
     console.log(versionData);
-    
+    //checking basic stats
     for (const userId in versionData) {
       let user = versionData[userId];
       let isRealUser = user['installerName'] == 'com.android.vending';
@@ -408,6 +438,7 @@
       add(dicLanguagePlayTime, user["language"], user["totalPlayTime"]);
       count(dicRetention, user["retentionType"]);
     }
+    //checking playtime by language
     for (const language in dicLanguagePlayTime) {
       let userCount = dicLanguage[language];
       console.log("user count for " + language + " is " + userCount);
@@ -420,6 +451,7 @@
         dicLanguagePlayTime[language] = (dicLanguagePlayTime[language] / 60 / userCount).toFixed(2);
       }
     }
+    //checking retention
     for(let i = 0; i <=30; i++){
       console.log("checking retention " + i);
       let sum = 0;
@@ -433,6 +465,8 @@
       dicRetentionCohort[i] = sum;
       dicRetentionPercent[i] = (dicRetentionCohort[i] / dicRetentionCohort[0] * 100).toFixed(2);
     }
+
+    calculateRevenue(versionData);
     drawChartByDictionary("chartUserByDay","Số user mới theo ngày", dicUserDate);
     drawChartByDictionary("chartLanguage", "Số user theo ngôn ngữ", dicLanguage);
     drawChartByDictionary("chartLanguagePlayTime", "Thời gian chơi theo từng ngôn ngữ (phút)", dicLanguagePlayTime);
@@ -444,6 +478,77 @@
     $('#retentionD7').text(dicRetentionPercent[7] + "%");
     $('#retentionD30').text(dicRetentionPercent[30] + "%");
     // $('#dataUser').text(JSON.stringify(str));
+  }
+
+  function calculateRevenue(versionData){
+    dicRevenue = {};
+    dicRevenuePerUser = {};
+    dicImpressionPerUser = {};
+    dicImpressionPerSession = {};
+
+    let revenueBanner = 0;
+    let revenueIntertistial = 0;
+    let revenueRewarded = 0;
+    let revenueAppOpen = 0;
+    let userCount = 0;
+    let sessionCount = 0;
+
+    let impressionBanner = 0;
+    let impressionIntertistial = 0;
+    let impressionRewarded = 0;
+    let impressionAppOpen = 0;
+
+    for (const userId in versionData) {
+      let user = versionData[userId];
+      let isRealUser = user['installerName'] == 'com.android.vending';
+      if (isRealUser == false) continue;
+
+      userCount++;
+      sessionCount += user["sessionCount"];
+      let revenue = user["revenue"];
+      revenueBanner += revenue["bannerRevenue"];
+      revenueIntertistial += revenue["interRevenue"];
+      revenueRewarded += revenue["rewardRevenue"];
+      revenueAppOpen += revenue["appOpenRevenue"];
+
+      impressionBanner += revenue["bannerSuccess"];
+      impressionIntertistial += revenue["interSuccess"];
+      impressionRewarded += revenue["rewardSuccess"];
+      impressionAppOpen += revenue["appOpenSuccess"];
+      
+      console.log("revenue detail = " + revenue);
+    }
+    let totalRevenue = revenueAppOpen + revenueBanner + revenueIntertistial + revenueRewarded;
+    let totalImpression = impressionBanner + impressionAppOpen + impressionIntertistial + impressionRewarded;
+
+    dicRevenue["total"] = totalRevenue;
+    dicRevenue["banner"] = revenueBanner;
+    dicRevenue["intertistial"] = revenueIntertistial;
+    dicRevenue["rewarded"] = revenueRewarded;
+    dicRevenue["app open"] = revenueAppOpen;
+
+    dicRevenuePerUser["total"] = totalRevenue / userCount;
+    dicRevenuePerUser["banner"] = revenueBanner / userCount;
+    dicRevenuePerUser["intertistial"] = revenueIntertistial / userCount;
+    dicRevenuePerUser["rewarded"] = revenueRewarded / userCount;
+    dicRevenuePerUser["app open"] = revenueAppOpen / userCount;
+
+    dicImpressionPerUser["total"] = totalImpression / userCount;
+    dicImpressionPerUser["banner"] = impressionBanner / userCount;
+    dicImpressionPerUser["intertistial"] = impressionIntertistial / userCount;
+    dicImpressionPerUser["rewarded"] = impressionRewarded / userCount;
+    dicImpressionPerUser["app open"] = impressionAppOpen / userCount;
+
+    dicImpressionPerSession["total"] = totalImpression / sessionCount;
+    dicImpressionPerSession["banner"] = impressionBanner / sessionCount;
+    dicImpressionPerSession["intertistial"] = impressionIntertistial / sessionCount;
+    dicImpressionPerSession["rewarded"] = impressionRewarded / sessionCount;
+    dicImpressionPerSession["app open"] = impressionAppOpen / sessionCount;
+
+    drawChartByDictionary("chartRevenue", "Revenue", dicRevenue);
+    drawChartByDictionary("chartRevenuePerUser", "Revenue Per User", dicRevenuePerUser);
+    drawChartByDictionary("chartImpressionPerUser", "Impression Per User", dicImpressionPerUser);
+    drawChartByDictionary("chartImpressionPerSession", "Impression Per Session", dicImpressionPerSession);
   }
 
   function count(dic, key){
@@ -464,7 +569,7 @@
     }
   }
 
-  function calculateRevenue(){
+  function calculateRevenue1(){
     let adSpend = $("#inputAdSpend").val();
     console.log("ad spend = " + adSpend);
     let totalRevenue = $("#inputRevenue").val();
@@ -499,8 +604,8 @@
       dicCharts[chartName].destroy();
     }
     let barColors = [];
-    let colors = ["red", "orange", "green", "blue", "purple"];
-
+    // let colors = ["red", "orange", "green", "blue", "purple"];
+    let colors = ["green", "blue", "purple", "red", "orange"];
     for (let i = 0; i < columnNames.length; i++) {
       let colorIndex = i % colors.length;
       console.log("color index = " + colorIndex + " , colors[colorIndex] = " + colors[colorIndex]);
@@ -539,15 +644,6 @@
   let userCount = 0;
 
   function calculateAll(allData) {
-    // var xValues = [];
-    // var yValues = [];
-    // var retentionValues = [];
-    // var barColors = "blue";
-
-    // for (let i = 0; i <= 7; i++) {
-    //     xValues.push("retention " + i);
-    //     retentionValues.push(0);
-    // }
     retentionDay0 = 0;
     retentionDay1 = 0;
     totalPlayTime = 0;
