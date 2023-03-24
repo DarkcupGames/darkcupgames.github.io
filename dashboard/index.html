@@ -460,6 +460,7 @@
   let dicRetentionCohort = {};
   let dicRetentionPercent = {};
   let dicPlayDayCount = {};
+  let dicHavePlay = {};
 
   function updateVersionData(version) {
     dicUserDate = {};
@@ -470,6 +471,7 @@
     dicRetentionPercent = {};
     dicUserDropPercent = {};
     dicPlayDayCount = {};
+    dicHavePlay = {};
 
     let project = $('input[name=project]:checked').val();
     let versionData = dicProjectDatas[project][version]["userdata"];
@@ -489,7 +491,6 @@
       str += words[0];
 
       let dateStr = words[0];
-      // console.log(`this is string date , year = ${dateStr[0] + dateStr[1]}, month = ${dateStr[2] + dateStr[3]}, day = ${dateStr[4] + dateStr[5]}`);
 
       let year = "20" + dateStr[0] + dateStr[1];
       let month = parseInt(dateStr[2] + dateStr[3]);
@@ -498,9 +499,10 @@
 
       const differenceInMs = new Date().getTime() - date.getTime();
       const playDay = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
-      // console.log("play day: ");
-      // console.log(differenceInDays);
+      console.log(`play day = ${playDay}, retention type = ${user["retentionType"]}`);
 
+      let retentionType = parseInt(user["retentionType"]);
+      
       count(dicUserDate, words[0]);
       count(dicLanguage, user["language"]);
       add(dicLanguagePlayTime, user["language"], user["totalPlayTime"]);
@@ -518,7 +520,7 @@
       }
     }
     //checking retention
-    for(let i = 0; i <=30; i++){
+    for(let i = 0; i <= 30; i++){
       console.log("checking retention " + i);
       let sum = 0;
       for (const retentionType in dicRetention) {      
