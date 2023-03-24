@@ -95,6 +95,7 @@
   <div class="row ">
   </div>
 
+  <div class="separator"></div>
   <fieldset>
     <legend>
       <span class="" style="font-size: large;">Level Status</span>
@@ -132,10 +133,11 @@
     </div>
 
     <div class="col">
-      <!-- <canvas id="chartLevelTimeSpent" style="width:100%;max-width:700px"></canvas> -->
+      <canvas id="chartLevelDropPercent" style="width:100%;max-width:700px"></canvas>
     </div>
   </div>
 
+  <div class="separator"></div>
   <fieldset>
     <legend>
       <span class="" style="font-size: large;">Retention and Language</span>
@@ -204,6 +206,7 @@
     </div>
   </div>
 
+  <div class="separator"></div>
   <fieldset>
     <legend>
       <span class="" style="font-size: large;">Finance</span>
@@ -434,11 +437,6 @@
     drawChart("chartPlayTime", "Tổng thời gian chơi (phút)", versionHaveUsers, playTimes);
     drawChart("chartSessionCount", "Số lượng session", versionHaveUsers, sessionCounts);
     drawChart("chartPlayTimeAvg", "Thời gian chơi mỗi session", versionHaveUsers, playTimeEachSessions);
-
-    // if (versionHaveUsers.length > 0){
-    //   let newestVersion = versionHaveUsers[versionHaveUsers.length - 1];
-    //   updateVersionData(newestVersion);
-    // }
   }
 
   let dicUserDate = {};
@@ -455,6 +453,7 @@
     dicRetention = {};
     dicRetentionCohort = {};
     dicRetentionPercent = {};
+    dicUserDropPercent = {};
 
     let project = $('input[name=project]:checked').val();
     let versionData = dicProjectDatas[project][version]["userdata"];
@@ -527,6 +526,7 @@
   let dicWin = {};
   let dicLevelTimeSpent = {};
   let dicLevelCount = {};
+  let dicUserDropPercent = {};
   
   function calculateLevel(versionData){
     dicLevel = {};
@@ -534,7 +534,9 @@
     dicLose = {};
     dicWin = {};
     dicLevelTimeSpent = {};    
+    dicUserDropPercent = {};
     let userCount = 0;
+    let maxLevel = 0;
 
     for (const userId in versionData) {
       let user = versionData[userId];
@@ -546,10 +548,13 @@
 
       userCount++;
       let level = user["level"];
+      if (level > maxLevel) maxLevel = level;
+
       count(dicLevel, level);
       for (let i = 0; i <= level; i++) {
         count(dicLevelCount, i);
       }
+      
       for (const level in winlose) {
         let winloseData = winlose[level];
         add(dicLose, level, winloseData["loseCount"]);
@@ -559,6 +564,12 @@
         // dicLevelTimeSpent[level] += winloseData["timeSpent"];
       }
     }
+
+    for (let i = 1; i <= maxLevel; i++) {
+      let percent = (1 - dicLevelCount[i]/dicLevelCount[i-1]) *100;
+      dicUserDropPercent[i-1] = percent.toFixed(2);
+    }
+    dicUserDropPercent[maxLevel] = 100;
 
     for (const key in dicLose) {
       dicLose[key] = dicLose[key] / dicLevelCount[key];
@@ -582,6 +593,7 @@
     drawChartByDictionary("chartLevelLose", "Lose Level Per User", dicLose);
     drawChartByDictionary("chartLevelTimeSpent", "Level Time Spent Per User", dicLevelTimeSpent);
     drawChartByDictionary("chartLevelWinPercent", "Level Win Percent", dicWinPercent);
+    drawChartByDictionary("chartLevelDropPercent", "User Give Up Percent by level", dicUserDropPercent);
   }
 
   function calculateRevenue(versionData){
