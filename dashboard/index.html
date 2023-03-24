@@ -206,6 +206,20 @@
     </div>
   </div>
 
+  <div class="row ">
+    <div class="col">
+      <canvas id="chartUserPlayDay" style="width:100%;max-width:700px"></canvas>
+    </div>
+    
+    <div class="col">
+      <!-- <canvas id="chartLanguage" style="width:100%;max-width:700px"></canvas> -->
+    </div>
+
+    <div class="col">
+      <!-- <canvas id="chartLanguagePlayTime" style="width:100%;max-width:700px"></canvas> -->
+    </div>
+  </div>
+
   <div class="separator"></div>
   <fieldset>
     <legend>
@@ -445,6 +459,7 @@
   let dicRetention = {};
   let dicRetentionCohort = {};
   let dicRetentionPercent = {};
+  let dicPlayDayCount = {};
 
   function updateVersionData(version) {
     dicUserDate = {};
@@ -454,6 +469,7 @@
     dicRetentionCohort = {};
     dicRetentionPercent = {};
     dicUserDropPercent = {};
+    dicPlayDayCount = {};
 
     let project = $('input[name=project]:checked').val();
     let versionData = dicProjectDatas[project][version]["userdata"];
@@ -472,21 +488,32 @@
       console.log(words[0]);
       str += words[0];
 
+      let dateStr = words[0];
+      // console.log(`this is string date , year = ${dateStr[0] + dateStr[1]}, month = ${dateStr[2] + dateStr[3]}, day = ${dateStr[4] + dateStr[5]}`);
+
+      let year = "20" + dateStr[0] + dateStr[1];
+      let month = parseInt(dateStr[2] + dateStr[3]);
+      let day = parseInt(dateStr[4] + dateStr[5]);
+      let date = new Date(year,month - 1,day);
+
+      const differenceInMs = new Date().getTime() - date.getTime();
+      const playDay = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
+      // console.log("play day: ");
+      // console.log(differenceInDays);
+
       count(dicUserDate, words[0]);
       count(dicLanguage, user["language"]);
       add(dicLanguagePlayTime, user["language"], user["totalPlayTime"]);
       count(dicRetention, user["retentionType"]);
+      count(dicPlayDayCount, playDay);
     }
     //checking playtime by language
     for (const language in dicLanguagePlayTime) {
       let userCount = dicLanguage[language];
-      console.log("user count for " + language + " is " + userCount);
       if (userCount == 0) {
         dicLanguagePlayTime[language] = 0;
       }
       else {
-        console.log("dicLanguagePlayTime[language] = " + dicLanguagePlayTime[language]);
-        console.log("dicLanguagePlayTime / 60 / userCount = " + (dicLanguagePlayTime[language] / 60 / userCount));
         dicLanguagePlayTime[language] = (dicLanguagePlayTime[language] / 60 / userCount).toFixed(2);
       }
     }
@@ -494,9 +521,7 @@
     for(let i = 0; i <=30; i++){
       console.log("checking retention " + i);
       let sum = 0;
-      for (const retentionType in dicRetention) {
-        console.log("retentionType " + retentionType + " = " + dicRetention[retentionType]);
-        
+      for (const retentionType in dicRetention) {      
         if (retentionType >= i){
           sum += Number(dicRetention[retentionType]);
         }
@@ -514,6 +539,7 @@
     drawChartByDictionary("chartRetention", "Retention user", dicRetention);
     drawChartByDictionary("chartRetentionCohort", "Retention user by cohort", dicRetentionCohort);
     drawChartByDictionary("chartRetentionPercent", "Retention user by cohort (%)", dicRetentionPercent);
+    drawChartByDictionary("chartUserPlayDay", "Day count since first play", dicPlayDayCount);
     $('#retentionD1').text(dicRetentionPercent[1] + "%");
     $('#retentionD3').text(dicRetentionPercent[3] + "%");
     $('#retentionD7').text(dicRetentionPercent[7] + "%");
@@ -682,11 +708,11 @@
 
   function add(dic, key, value){
     if (dic[key] == null){
-      console.log("set key = " + key + " , value = " + value);
+      // console.log("set key = " + key + " , value = " + value);
       dic[key] = value;
     } else {
       dic[key] += value;
-      console.log("add key = " + key + " , value = " + value + ", total value = " + dic[key]);
+      // console.log("add key = " + key + " , value = " + value + ", total value = " + dic[key]);
     }
   }
 
@@ -729,7 +755,7 @@
     let colors = ["green", "blue", "purple", "red", "orange"];
     for (let i = 0; i < columnNames.length; i++) {
       let colorIndex = i % colors.length;
-      console.log("color index = " + colorIndex + " , colors[colorIndex] = " + colors[colorIndex]);
+      // console.log("color index = " + colorIndex + " , colors[colorIndex] = " + colors[colorIndex]);
       barColors.push(colors[colorIndex]);
     }
     let chart = new Chart(chartName, {
