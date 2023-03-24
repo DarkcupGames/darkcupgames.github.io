@@ -527,6 +527,7 @@
   let dicLevelTimeSpent = {};
   let dicLevelCount = {};
   let dicUserDropPercent = {};
+  let dicLevelPlayCount = {};
   
   function calculateLevel(versionData){
     dicLevel = {};
@@ -535,6 +536,8 @@
     dicWin = {};
     dicLevelTimeSpent = {};    
     dicUserDropPercent = {};
+    dicLevelPlayCount = {};
+
     let userCount = 0;
     let maxLevel = 0;
 
@@ -560,6 +563,7 @@
         add(dicLose, level, winloseData["loseCount"]);
         add(dicWin, level, winloseData["winCount"]);
         add(dicLevelTimeSpent, level, winloseData["timeSpent"]);
+        count(dicLevelPlayCount, level);
         // dicLose[level] += winloseData["loseCount"];
         // dicLevelTimeSpent[level] += winloseData["timeSpent"];
       }
@@ -571,14 +575,6 @@
     }
     dicUserDropPercent[maxLevel] = 100;
 
-    for (const key in dicLose) {
-      dicLose[key] = dicLose[key] / dicLevelCount[key];
-    }
-
-    for (const key in dicLevelTimeSpent) {
-      dicLevelTimeSpent[key] = dicLevelTimeSpent[key] / dicLevelCount[key];
-    }
-
     let dicWinPercent = {};
 
     for (const key in dicLose) {
@@ -588,9 +584,18 @@
       dicWinPercent[key] = ((win / (win + lose)) *100).toFixed(2);
     }
 
+    let dicLosePerUser = {};
+    for (const key in dicLose) {
+      dicLosePerUser[key] = dicLose[key] / dicLevelPlayCount[key];
+    }
+    
+    for (const key in dicLevelTimeSpent) {
+      dicLevelTimeSpent[key] = dicLevelTimeSpent[key] / dicLevelPlayCount[key];
+    }
+
     drawChartByDictionary("chartUserLevel", "User by level", dicLevel);
     drawChartByDictionary("chartUserLevelCount", "Number user pass level", dicLevelCount);
-    drawChartByDictionary("chartLevelLose", "Lose Level Per User", dicLose);
+    drawChartByDictionary("chartLevelLose", "Lose Level Per User", dicLosePerUser);
     drawChartByDictionary("chartLevelTimeSpent", "Level Time Spent Per User", dicLevelTimeSpent);
     drawChartByDictionary("chartLevelWinPercent", "Level Win Percent", dicWinPercent);
     drawChartByDictionary("chartLevelDropPercent", "User Give Up Percent by level", dicUserDropPercent);
@@ -772,123 +777,13 @@
       if (isRealUser == false) continue;
       userCount++;
 
-      // let retention_type = user['retentionType'];
-      // let today = 738550.4475819197
-      // let timeSinceFirstPlay = Math.round(today - user["startPlayDay"]);
-
-      // let bool0 = timeSinceFirstPlay > 0 && retention_type >= 0;
-      // let bool1 = timeSinceFirstPlay > 1 && retention_type >= 1;
-
-      // if (bool0) retentionDay0 += 1;
-      // if (bool1) retentionDay1 += 1;
-
-      // let info = property + " timeSinceFirstPlay = " + timeSinceFirstPlay + ", retention 0 = " + bool0;
-      // if (bool1) info += ", retention 1 = " + bool1;
-      // console.log(info);
-
       let playTime = user["totalPlayTime"];
       totalPlayTime += playTime;
 
       let sessionCount = user["sessionCount"];
       totalSessionCount += sessionCount;
     }
-
-    // retentionValues[0] = retentionDay0;
-    // retentionValues[1] = retentionDay1;
-    // console.log(retentionValues);
-
-    // const div1 = document.getElementById("retentionDay1");
-    // div1.innerText = (retentionDay1 / retentionDay0 * 100).toFixed(2) + "%";
-
-    // const div2 = document.getElementById("avgPlayTime");
-    // div2.innerText = (totalPlayTime / userCount / 60).toFixed(2) + " phút";
-
-    // const div3 = document.getElementById("avgSession");
-    // div3.innerText = (totalSessionCount / userCount).toFixed(2) + " lần";
-
-    // new Chart("myChart", {
-    //     type: "bar",
-    //     data: {
-    //         labels: xValues,
-    //         datasets: [{
-    //             label: 'Retention',
-    //             backgroundColor: barColors,
-    //             data: retentionValues
-    //         }]
-    //     },
-    //     options: {}
-    // });
   }
-
-  // function drawChart() {
-  //   var xValues = [];
-  //   var yValues = [];
-  //   var retentionValues = [];
-  //   var barColors = "blue";
-
-  //   for (let i = 0; i <= 7; i++) {
-  //     xValues.push("retention " + i);
-  //     retentionValues.push(0);
-  //   }
-
-  //   let retentionDay0 = 0;
-  //   let retentionDay1 = 0;
-  //   let totalPlayTime = 0;
-  //   let totalSessionCount = 0;
-  //   let userCount = 0;
-
-  //   for (const property in allData) {
-  //     var user = allData[property];
-  //     let isRealUser = user['installerName'] == 'com.android.vending';
-  //     if (isRealUser == false) continue;
-  //     userCount++;
-  //     let retention_type = user['retentionType'];
-  //     let today = 738550.4475819197
-  //     let timeSinceFirstPlay = Math.round(today - user["startPlayDay"]);
-
-  //     let bool0 = timeSinceFirstPlay > 0 && retention_type >= 0;
-  //     let bool1 = timeSinceFirstPlay > 1 && retention_type >= 1;
-
-  //     if (bool0) retentionDay0 += 1;
-  //     if (bool1) retentionDay1 += 1;
-
-  //     let info = property + " timeSinceFirstPlay = " + timeSinceFirstPlay + ", retention 0 = " + bool0;
-  //     if (bool1) info += ", retention 1 = " + bool1;
-  //     console.log(info);
-
-  //     let playTime = user["totalPlayTime"];
-  //     totalPlayTime += playTime;
-
-  //     let sessionCount = user["sessionCount"];
-  //     totalSessionCount += sessionCount;
-  //   }
-
-  //   retentionValues[0] = retentionDay0;
-  //   retentionValues[1] = retentionDay1;
-  //   console.log(retentionValues);
-
-  //   const div1 = document.getElementById("retentionDay1");
-  //   div1.innerText = (retentionDay1 / retentionDay0 * 100).toFixed(2) + "%";
-
-  //   const div2 = document.getElementById("avgPlayTime");
-  //   div2.innerText = (totalPlayTime / userCount / 60).toFixed(2) + " phút";
-
-  //   const div3 = document.getElementById("avgSession");
-  //   div3.innerText = (totalSessionCount / userCount).toFixed(2) + " lần";
-
-  //   new Chart("myChart", {
-  //     type: "bar",
-  //     data: {
-  //       labels: xValues,
-  //       datasets: [{
-  //         label: 'Retention',
-  //         backgroundColor: barColors,
-  //         data: retentionValues
-  //       }]
-  //     },
-  //     options: {}
-  //   });
-  // }
 </script>
 
 </html>
