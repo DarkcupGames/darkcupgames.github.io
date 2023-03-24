@@ -95,6 +95,46 @@
   <div class="row ">
   </div>
 
+  <fieldset>
+    <legend>
+      <span class="" style="font-size: large;">Level Status</span>
+    </legend>
+    <!-- <div class="chip-group" tabindex="-1" role="radiogroup" id="versionChip"> -->
+    <!-- </div> -->
+  </fieldset>
+
+
+  <div class="row ">
+    
+    
+    <div class="col">
+      <canvas id="chartUserLevel" style="width:100%;max-width:700px"></canvas>
+    </div>
+
+    <div class="col">
+      <canvas id="chartLevelLose" style="width:100%;max-width:700px"></canvas>
+    </div>
+
+    <div class="col">
+      <canvas id="chartLevelTimeSpent" style="width:100%;max-width:700px"></canvas>
+    </div>
+  </div>
+
+  <div class="row ">
+    
+    
+    <div class="col">
+      <canvas id="chartUserLevelCount" style="width:100%;max-width:700px"></canvas>
+    </div>
+
+    <div class="col">
+      <canvas id="chartLevelWinPercent" style="width:100%;max-width:700px"></canvas>
+    </div>
+
+    <div class="col">
+      <!-- <canvas id="chartLevelTimeSpent" style="width:100%;max-width:700px"></canvas> -->
+    </div>
+  </div>
 
   <fieldset>
     <legend>
@@ -466,7 +506,9 @@
       dicRetentionPercent[i] = (dicRetentionCohort[i] / dicRetentionCohort[0] * 100).toFixed(2);
     }
 
+    calculateLevel(versionData);
     calculateRevenue(versionData);
+
     drawChartByDictionary("chartUserByDay","Số user mới theo ngày", dicUserDate);
     drawChartByDictionary("chartLanguage", "Số user theo ngôn ngữ", dicLanguage);
     drawChartByDictionary("chartLanguagePlayTime", "Thời gian chơi theo từng ngôn ngữ (phút)", dicLanguagePlayTime);
@@ -478,6 +520,68 @@
     $('#retentionD7').text(dicRetentionPercent[7] + "%");
     $('#retentionD30').text(dicRetentionPercent[30] + "%");
     // $('#dataUser').text(JSON.stringify(str));
+  }
+
+  let dicLevel = {};
+  let dicLose = {};
+  let dicWin = {};
+  let dicLevelTimeSpent = {};
+  let dicLevelCount = {};
+  
+  function calculateLevel(versionData){
+    dicLevel = {};
+    dicLevelCount = {};
+    dicLose = {};
+    dicWin = {};
+    dicLevelTimeSpent = {};    
+    let userCount = 0;
+
+    for (const userId in versionData) {
+      let user = versionData[userId];
+      let isRealUser = user['installerName'] == 'com.android.vending';
+      if (isRealUser == false) continue;
+
+      let winlose = user["winloseDatas"];
+      if (winlose == null) continue;
+
+      userCount++;
+      let level = user["level"];
+      count(dicLevel, level);
+      for (let i = 0; i <= level; i++) {
+        count(dicLevelCount, i);
+      }
+      for (const level in winlose) {
+        let winloseData = winlose[level];
+        add(dicLose, level, winloseData["loseCount"]);
+        add(dicWin, level, winloseData["winCount"]);
+        add(dicLevelTimeSpent, level, winloseData["timeSpent"]);
+        // dicLose[level] += winloseData["loseCount"];
+        // dicLevelTimeSpent[level] += winloseData["timeSpent"];
+      }
+    }
+
+    for (const key in dicLose) {
+      dicLose[key] = dicLose[key] / dicLevelCount[key];
+    }
+
+    for (const key in dicLevelTimeSpent) {
+      dicLevelTimeSpent[key] = dicLevelTimeSpent[key] / dicLevelCount[key];
+    }
+
+    let dicWinPercent = {};
+
+    for (const key in dicLose) {
+      if (dicWin[key] == null) continue;
+      let lose = dicLose[key];
+      let win = dicWin[key];
+      dicWinPercent[key] = ((win / (win + lose)) *100).toFixed(2);
+    }
+
+    drawChartByDictionary("chartUserLevel", "User by level", dicLevel);
+    drawChartByDictionary("chartUserLevelCount", "Number user pass level", dicLevelCount);
+    drawChartByDictionary("chartLevelLose", "Lose Level Per User", dicLose);
+    drawChartByDictionary("chartLevelTimeSpent", "Level Time Spent Per User", dicLevelTimeSpent);
+    drawChartByDictionary("chartLevelWinPercent", "Level Win Percent", dicWinPercent);
   }
 
   function calculateRevenue(versionData){
