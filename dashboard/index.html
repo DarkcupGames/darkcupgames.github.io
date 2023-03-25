@@ -231,28 +231,6 @@
 
   <div class="row ">
     <div class="col">
-      <canvas id="chartRevenue" style="width:100%;max-width:700px"></canvas>
-    </div>
-
-    <div class="col">
-      <canvas id="chartRevenuePerUser" style="width:100%;max-width:700px"></canvas>
-    </div>
-
-    <div class="col">
-      <canvas id="chartImpressionPerUser" style="width:100%;max-width:700px"></canvas>
-    </div>
-  </div>
-
-  <div class="row ">
-    <div class="col">
-      <canvas id="chartImpressionPerSession" style="width:100%;max-width:700px"></canvas>
-    </div>
-
-    <div class="col">
-      <!-- <canvas id="chartRevenuePerUser" style="width:100%;max-width:700px"></canvas> -->
-    </div>
-
-    <div class="col">
       <table class="table table-striped">
         <thead>
           <tr>
@@ -297,7 +275,7 @@
             <td>Banner / user</td>
             <td><span id="revenueBannerPerUser">0.00$</span></td>
           </tr>
-          <tr>
+          <!-- <tr>
             <th scope="row">1</th>
             <td>User CPI</td>
             <td><span id="userCPI">0.00$</span></td>
@@ -311,46 +289,36 @@
             <th scope="row">1</th>
             <td>ROAS</td>
             <td><span id="roas">0.00%</span></td>
-          </tr>
+          </tr> -->
         </tbody>
       </table>
-      <!-- <canvas id="chartImpressionPerUser" style="width:100%;max-width:700px"></canvas> -->
+      <!-- <canvas id="chartRevenue" style="width:100%;max-width:700px"></canvas> -->
+    </div>
+
+    <div class="col">
+      <div class="row">
+        <canvas id="chartRevenue" style="width:100%;max-width:700px"></canvas>
+        <!-- <canvas id="chartRevenuePerUser" style="width:100%;max-width:700px"></canvas> -->
+      </div>
+
+      <div class="row">
+        <canvas id="chartImpressionPerUser" style="width:100%;max-width:700px"></canvas>
+      </div>
+      
+    </div>
+
+    <div class="col">
+      <div class="row">
+        <!-- <canvas id="chartRevenue" style="width:100%;max-width:700px"></canvas> -->
+        <canvas id="chartRevenuePerUser" style="width:100%;max-width:700px"></canvas>
+      </div>
+
+      <div class="row">
+        <canvas id="chartImpressionPerSession" style="width:100%;max-width:700px"></canvas>
+      </div>
+      
     </div>
   </div>
-
-  <div class="row ">
-    <div class="col">
-      <div class="row">
-        <span style="font-size: medium;">Input ads spend: </span>
-        <div class="col">
-          <input id="inputAdSpend" value="0" />
-        </div>
-      </div>
-    
-      <div class="row">
-        <span style="font-size: medium;">Input Revenue: </span>
-        <div class="col">
-          <input id="inputRevenue" value="0" />
-        </div>
-      </div>
-      <br>
-      <div class="row">
-        <div class="col">
-          <button id="calculate" class="btn btn-primary" onclick=calculateRevenue()>Tính toán</button>
-        </div>
-      </div>
-    </div>
-    
-    <div class="col">
-      <!-- <canvas id="chartLanguage" style="width:100%;max-width:700px"></canvas> -->
-    </div>
-
-    <div class="col">
-      <!-- <canvas id="chartLanguagePlayTime" style="width:100%;max-width:700px"></canvas> -->
-    </div>
-  </div>
-
-
 
   <div class="row ">
 
@@ -731,8 +699,8 @@
     drawChartByDictionary("chartImpressionPerUser", "Impression Per User", dicImpressionPerUser);
     drawChartByDictionary("chartImpressionPerSession", "Impression Per Session", dicImpressionPerSession);
 
-    $("#revenueThisVersion").text(dicRevenue["total"].toFixed(4) + "$");
-    $("#revenuePerUser").text(dicRevenuePerUser["total"].toFixed(4) + "$");
+    $("#revenueThisVersion").text(dicRevenue["total"].toFixed(4));
+    $("#revenuePerUser").text(dicRevenuePerUser["total"].toFixed(4));
 
     $("#revenueInterPerUser").text(dicImpressionPerUser["intertistial"].toFixed(2));
     $("#revenueRewardPerUser").text(dicImpressionPerUser["rewarded"].toFixed(2));
@@ -740,7 +708,7 @@
     $("#revenueBannerPerUser").text(dicImpressionPerUser["banner"].toFixed(2));
 
     $("#revenueImpressionPerUser").text(dicImpressionPerUser["total"].toFixed(4));
-    $("#revenuePerUser").text(dicRevenuePerUser["total"].toFixed(4) + "$");
+    // $("#revenuePerUser").text(dicRevenuePerUser["total"].toFixed(4));
     
     // $("#userCPI").text(userCPI.toFixed(4) + "$");
     // $("#roas").text(roas + "%");
