@@ -56,7 +56,6 @@
   </div>
   <div class="row ">
 
-
     <div class="col">
       <canvas id="chartPlayTimeAvg" style="width:100%;max-width:700px"></canvas>
     </div>
@@ -70,17 +69,6 @@
     </div>
 
   </div>
-  <!-- <div class="row ">
-    <div class="col-md-4">
-      <span class="" style="font-size: medium;">Retention D1: </span><span id="retentionDay1"></span>
-    </div>
-    <div class="col-md-4">
-      <span class="" style="font-size: medium;">Thời gian chơi trung bình:</span><span id="avgPlayTime"></span>
-    </div>
-    <div class="col-md-4">
-      <span class="" style="font-size: medium;">Số lần chơi trung bình: </span><span id="avgSession"></span>
-    </div>
-  </div> -->
 
   <div class="separator"></div>
 
@@ -120,6 +108,32 @@
       <canvas id="chartLevelTimeSpent" style="width:100%;max-width:700px"></canvas>
     </div>
   </div>
+
+  <div class="row ">
+    
+    
+    <div class="col">
+      <canvas id="chartUserLevelCount" style="width:100%;max-width:700px"></canvas>
+    </div>
+
+    <div class="col">
+      <canvas id="chartLevelWinPercent" style="width:100%;max-width:700px"></canvas>
+    </div>
+
+    <div class="col">
+      <canvas id="chartLevelDropPercent" style="width:100%;max-width:700px"></canvas>
+    </div>
+  </div>
+
+
+  <div class="separator"></div>
+  <fieldset>
+    <legend>
+      <span class="" style="font-size: large;">Quit Reason</span>
+    </legend>
+    <!-- <div class="chip-group" tabindex="-1" role="radiogroup" id="versionChip"> -->
+    <!-- </div> -->
+  </fieldset>
 
   <div class="row ">
     
@@ -318,15 +332,36 @@
     </div>
   </div>
 
-  <div class="row ">
+  <!-- <div class="row ">
     <div class="col">
       <canvas id="chartUserAction_1" style="width:100%;max-width:700px"></canvas>
     </div>
+</div> -->
+
+<div class="separator"></div>
+<fieldset>
+  <legend>
+    <span class="" style="font-size: large;">User Session Snapshots</span>
+  </legend>
+  <!-- <div class="chip-group" tabindex="-1" role="radiogroup" id="versionChip"> -->
+  <!-- </div> -->
+</fieldset>
+
+  <div class="row ">
+    <div class="col">
+      <!-- <canvas id="chartTest" style="max-width:700px;"></canvas> -->
+    </div>
+    <div class="col">
+      <canvas id="chartTest" style="max-width:700px;"></canvas>
+    </div>
 </div>
+
+<div class="row ">
 <script>
   var projectConfig = {};
   var allData = [];
   var dicProjectDatas = {};
+  var dicSessionDatas = {};
   var dicCharts = {};
 
   $(function () {
@@ -375,6 +410,8 @@
   function onSelectProject(project) {
     let rawData;
 
+    querySessionData(project);
+
     if (dicProjectDatas[project] != null) {
       rawData = dicProjectDatas[project];
       updateProjectData(rawData);
@@ -393,6 +430,24 @@
       rawData = snapshot.val();
       dicProjectDatas[project] = rawData;
       updateProjectData(rawData);
+    });
+  }
+
+  function querySessionData(project){
+    if (dicSessionDatas[project] != null) {
+      return;
+    }
+
+    $('#loaderOverlay').show();
+    const db = firebase.app(project).database();
+    db.goOnline();
+    let ref = db.ref("session").orderByKey();
+
+    ref.once('value', (snapshot) => {
+      $('#loaderOverlay').hide();
+      // console.log("get data completed");
+      // console.log(snapshot.val());
+      dicSessionDatas[project] = snapshot.val();
     });
   }
 
@@ -553,6 +608,59 @@
     $('#retentionD7').text(dicRetentionPercent[7] + "%");
     $('#retentionD30').text(dicRetentionPercent[30] + "%");
     // $('#dataUser').text(JSON.stringify(str));
+
+    showUserSessionSnapShot(version);
+  }
+
+  function showUserSessionSnapShot(version){
+    let project = $('input[name=project]:checked').val();
+    let versionData = dicSessionDatas[project][version];
+    console.log(versionData);
+    $("#testHere").text(versionData);
+    for (const userId in versionData) {
+      let user = versionData[userId];
+      for (const sessionId in user) {
+        let session = user[sessionId];
+        console.log("this is user id: " + session["id"]);
+
+        let actions = session["actions"];
+
+        drawActionBoard(actions);
+      }
+    }
+  }
+
+  function drawActionBoard(actions){
+    let colors = [];
+    let values = [];
+    let names = [];
+
+    for (let i = 0; i < actions.length; i++) {
+      let color = "blue";
+
+      let action = actions[i];
+      if (action.includes("level")){
+        if (action.includes("pass")){
+          color = "green";
+        } else if (action.includes("fail")){
+          color = "red";
+        }
+      } else {
+        if (action.includes("app open")){
+          color = "orange";
+        } else if (action.includes("success")){
+          color = "purple";
+        } else if (action.includes("fail")){
+          color = "pink";
+        }
+      }
+
+      colors.push(color);
+      values.push(1);
+      names.push(action);
+    }
+
+    drawChartWithColors("chartTest", "test action", names, values, colors);
   }
 
   let dicLevel = {};
@@ -752,26 +860,6 @@
     }
   }
 
-  // function calculateRevenue1(){
-  //   let adSpend = $("#inputAdSpend").val();
-  //   console.log("ad spend = " + adSpend);
-  //   let totalRevenue = $("#inputRevenue").val();
-  //   console.log("total revenue = " + totalRevenue);
-  //   console.log("user count = " + dicRetentionCohort[0]);
-  //   let revenuePerUser = totalRevenue / dicRetentionCohort[0];
-  //   console.log("revenue per user = " + revenuePerUser.toFixed(2));
-  //   console.log("money spend: " + adSpend);
-  //   let userCPI = adSpend / dicRetentionCohort[0];
-  //   console.log("user CPI = " + userCPI.toFixed(2));
-  //   let roas = (revenuePerUser / userCPI * 100).toFixed(2);
-  //   console.log("revenue per CPI = " + roas + "%");
-
-  //   $("#userAcquisition").text(dicRetentionCohort[0]);
-  //   $("#revenuePerUser").text(revenuePerUser.toFixed(4) + "$");
-  //   $("#userCPI").text(userCPI.toFixed(4) + "$");
-  //   $("#roas").text(roas + "%");
-  // }
-
   function drawChartByDictionary(chartName, title, dic){
     let columnNames = [];
     let values = [];
@@ -782,17 +870,9 @@
     drawChart(chartName, title, columnNames, values);
   }
 
-  function drawChart(chartName, title, columnNames, values) {
+  function drawChartWithColors(chartName, title, columnNames, values, colors){
     if (dicCharts[chartName] != null) {
       dicCharts[chartName].destroy();
-    }
-    let barColors = [];
-    // let colors = ["red", "orange", "green", "blue", "purple"];
-    let colors = ["green", "blue", "purple", "red", "orange"];
-    for (let i = 0; i < columnNames.length; i++) {
-      let colorIndex = i % colors.length;
-      // console.log("color index = " + colorIndex + " , colors[colorIndex] = " + colors[colorIndex]);
-      barColors.push(colors[colorIndex]);
     }
     let chart = new Chart(chartName, {
       type: "bar",
@@ -800,7 +880,7 @@
         labels: columnNames,
         datasets: [{
           label: title,
-          backgroundColor: barColors,
+          backgroundColor: colors,
           data: values
         }]
       },
@@ -815,7 +895,17 @@
       }
     });
     dicCharts[chartName] = chart;
-    return chart;
+  }
+
+  function drawChart(chartName, title, columnNames, values) {
+    let barColors = [];
+    let colors = ["green", "blue", "purple", "red", "orange"];
+    for (let i = 0; i < columnNames.length; i++) {
+      let colorIndex = i % colors.length;
+      barColors.push(colors[colorIndex]);
+    }
+
+    return drawChartWithColors(chartName, title, columnNames, values, barColors);
   }
 
   const MIN_NUMBER_USER_ANALYTICS = 5;
