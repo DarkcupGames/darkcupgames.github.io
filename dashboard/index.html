@@ -206,19 +206,19 @@
     </div>
   </div>
 
-  <div class="row ">
+  <!-- <div class="row ">
     <div class="col">
       <canvas id="chartUserPlayDay" style="width:100%;max-width:700px"></canvas>
     </div>
     
     <div class="col">
-      <!-- <canvas id="chartLanguage" style="width:100%;max-width:700px"></canvas> -->
+      <canvas id="chartLanguage" style="width:100%;max-width:700px"></canvas>
     </div>
 
     <div class="col">
-      <!-- <canvas id="chartLanguagePlayTime" style="width:100%;max-width:700px"></canvas> -->
+      <canvas id="chartLanguagePlayTime" style="width:100%;max-width:700px"></canvas>
     </div>
-  </div>
+  </div> -->
 
   <div class="separator"></div>
   <fieldset>
@@ -388,10 +388,12 @@
     $('#loaderOverlay').show();
     const db = firebase.app(project).database();
     db.goOnline();
-    let ref = db.ref().orderByKey();
+    let ref = db.ref("userdata").orderByKey();
 
     ref.once('value', (snapshot) => {
       $('#loaderOverlay').hide();
+      console.log("get data completed");
+      console.log(snapshot.val());
       rawData = snapshot.val();
       dicProjectDatas[project] = rawData;
       updateProjectData(rawData);
@@ -421,7 +423,7 @@
 
     for (const versionName in rawData) {
       console.log(`${versionName}: ${rawData[versionName]}`);
-      let userdata = rawData[versionName]["userdata"];
+      let userdata = rawData[versionName];
       console.log("get userdata for version " + versionName);
       console.log(userdata);
       console.log("userdata length = " + Object.keys(userdata).length);
@@ -474,7 +476,7 @@
     dicHavePlay = {};
 
     let project = $('input[name=project]:checked').val();
-    let versionData = dicProjectDatas[project][version]["userdata"];
+    let versionData = dicProjectDatas[project][version];
     let str = "";
 
     str += "this is pikachu\n";
@@ -541,7 +543,7 @@
     drawChartByDictionary("chartRetention", "Retention user", dicRetention);
     drawChartByDictionary("chartRetentionCohort", "Retention user by cohort", dicRetentionCohort);
     drawChartByDictionary("chartRetentionPercent", "Retention user by cohort (%)", dicRetentionPercent);
-    drawChartByDictionary("chartUserPlayDay", "Day count since first play", dicPlayDayCount);
+    // drawChartByDictionary("chartUserPlayDay", "Day count since first play", dicPlayDayCount);
     $('#retentionD1').text(dicRetentionPercent[1] + "%");
     $('#retentionD3').text(dicRetentionPercent[3] + "%");
     $('#retentionD7').text(dicRetentionPercent[7] + "%");
