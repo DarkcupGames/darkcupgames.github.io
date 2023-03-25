@@ -139,15 +139,15 @@
     
     
     <div class="col">
-      <canvas id="chartUserLevelCount" style="width:100%;max-width:700px"></canvas>
+      <canvas id="chartQuitReason" style="width:100%;max-width:700px"></canvas>
     </div>
 
     <div class="col">
-      <canvas id="chartLevelWinPercent" style="width:100%;max-width:700px"></canvas>
+      <canvas id="chartQuitReason_BoringGameplay" style="width:100%;max-width:700px"></canvas>
     </div>
 
     <div class="col">
-      <canvas id="chartLevelDropPercent" style="width:100%;max-width:700px"></canvas>
+      <canvas id="chartQuitReason_IntertistialAds" style="width:100%;max-width:700px"></canvas>
     </div>
   </div>
 
@@ -594,6 +594,7 @@
     }
 
     calculateLevel(versionData);
+    calculateQuitReason(versionData);
     calculateRevenue(versionData);
 
     drawChartByDictionary("chartUserByDay","Số user mới theo ngày", dicUserDate);
@@ -615,22 +616,20 @@
   function showUserSessionSnapShot(version){
     let project = $('input[name=project]:checked').val();
     let versionData = dicSessionDatas[project][version];
-    console.log(versionData);
-    // $("#testHere").text(versionData);
-    $('#userSessionGroup').children().remove();
 
+    $('#userSessionGroup').children().remove();
     for (const userId in versionData) {
       let user = versionData[userId];
+      let index = 0;
       for (const sessionId in user) {
         let session = user[sessionId];
-        console.log("this is user id: " + session["id"]);
-        // let actions = session["actions"];
-        drawActionBoard(session);
+        drawActionBoard(session, index);
+        index++;
       }
     }
   }
 
-  function drawActionBoard(session){
+  function drawActionBoard(session, index){
     let isRealUser = session['installer'] == 'com.android.vending';
     if (isRealUser == false) return;
 
@@ -664,11 +663,42 @@
       names.push(action);
     }
 
-    let chartName = "chartUserSession_" + session["id"];
+    let id = session["id"] + "_" + index;
+    let chartName = "chartUserSession_" + id;
     let htmlPattern = 
     `  <div class="row ">
         <div class="col-4">
-
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Name</th>
+                <th scope="col">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">1</th>
+                <td>User Id</td>
+                <td><span id="snapShotUserId_${id}">30%</span></td>
+              </tr>
+              <tr>
+                <th scope="row">1</th>
+                <td>Language</td>
+                <td><span id="snapShotLanguage_${id}">30%</span></td>
+              </tr>
+              <tr>
+                <th scope="row">1</th>
+                <td>Session Time</td>
+                <td><span id="snapShotSessionTime_${id}">30%</span></td>
+              </tr>
+              <tr>
+                <th scope="row">1</th>
+                <td>Total Time</td>
+                <td><span id="snapShotTotalTime_${id}">30%</span></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
         <div class="col-8">
           <canvas id="${chartName}" style="max-width:700px;"></canvas>
@@ -677,6 +707,13 @@
     $('#userSessionGroup').append(htmlPattern);
 
     drawChartWithColors(chartName, "User action snapshot", names, values, colors);
+
+    let sessionTime = Number(session["sessionTime"]) / 60;
+    let totalTime = Number(session["totalTime"]) / 60;
+    $("#snapShotUserId_" + id).text(session["id"]);
+    $("#snapShotLanguage_" + id).text(session["language"]);
+    $("#snapShotSessionTime_" + id).text(sessionTime.toFixed(2));
+    $("#snapShotTotalTime_" + id).text(totalTime.toFixed(2));
   }
 
   let dicLevel = {};
@@ -722,8 +759,6 @@
         add(dicWin, level, winloseData["winCount"]);
         add(dicLevelTimeSpent, level, winloseData["timeSpent"]);
         count(dicLevelPlayCount, level);
-        // dicLose[level] += winloseData["loseCount"];
-        // dicLevelTimeSpent[level] += winloseData["timeSpent"];
       }
     }
 
@@ -757,6 +792,39 @@
     drawChartByDictionary("chartLevelTimeSpent", "Level Time Spent Per User", dicLevelTimeSpent);
     drawChartByDictionary("chartLevelWinPercent", "Level Win Percent", dicWinPercent);
     drawChartByDictionary("chartLevelDropPercent", "User Give Up Percent by level", dicUserDropPercent);
+  }
+
+  let dicQuitReason = {};
+  let dicQuitReason_BoringGameplay = {};
+  let dicQuitReason_IntertistialAds = {};
+
+  function calculateQuitReason(versionData){
+    dicQuitReason = {};
+
+    for (const userId in versionData) {
+      let user = versionData[userId];
+      let isRealUser = user['installerName'] == 'com.android.vending';
+      if (isRealUser == false) continue;
+
+      let quitReason = user["quitReason"];
+      if (quitReason == null) continue;
+
+      userCount++;
+      let type = quitReason["type"];
+      let level = quitReason["level"];
+
+      count(dicQuitReason, type);
+      if (type == "BoringGameplay"){
+        count(dicQuitReason_BoringGameplay, level);
+      }
+      if (type == "IntertistialAds"){
+        count(dicQuitReason_IntertistialAds, level);
+      }
+    }
+
+    drawChartByDictionary("chartQuitReason", "Quit Reason", dicQuitReason);
+    drawChartByDictionary("chartQuitReason_BoringGameplay", "Quit Boring Gameplay by level", dicQuitReason_BoringGameplay);
+    drawChartByDictionary("chartQuitReason_IntertistialAds", "Quit Intertistial Ads by level", dicQuitReason_IntertistialAds);
   }
 
   let revenueBanner = 0;
@@ -868,11 +936,9 @@
 
   function add(dic, key, value){
     if (dic[key] == null){
-      // console.log("set key = " + key + " , value = " + value);
       dic[key] = value;
     } else {
       dic[key] += value;
-      // console.log("add key = " + key + " , value = " + value + ", total value = " + dic[key]);
     }
   }
 
