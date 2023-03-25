@@ -253,6 +253,67 @@
     </div>
 
     <div class="col">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">1</th>
+            <td>Total revenue</td>
+            <td><span id="revenueTotal">0</span></td>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <td>This version revenue</td>
+            <td><span id="revenueThisVersion">0</span></td>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <td>Revenue per user</td>
+            <td><span id="revenuePerUser">0.00$</span></td>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <td>Intertistial / user</td>
+            <td><span id="revenueInterPerUser">0.00$</span></td>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <td>Rewarded / user</td>
+            <td><span id="revenueRewardPerUser">0.00$</span></td>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <td>App Open / user</td>
+            <td><span id="revenueAppOpenPerUser">0.00$</span></td>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <td>Banner / user</td>
+            <td><span id="revenueBannerPerUser">0.00$</span></td>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <td>User CPI</td>
+            <td><span id="userCPI">0.00$</span></td>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <td>User CPI</td>
+            <td><span id="userCPI">0.00$</span></td>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <td>ROAS</td>
+            <td><span id="roas">0.00%</span></td>
+          </tr>
+        </tbody>
+      </table>
       <!-- <canvas id="chartImpressionPerUser" style="width:100%;max-width:700px"></canvas> -->
     </div>
   </div>
@@ -282,37 +343,6 @@
     
     <div class="col">
       <!-- <canvas id="chartLanguage" style="width:100%;max-width:700px"></canvas> -->
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th scope="col">#</th>
-            <th scope="col">Name</th>
-            <th scope="col">Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th scope="row">1</th>
-            <td>User acquisition</td>
-            <td><span id="userAcquisition">0</span></td>
-          </tr>
-          <tr>
-            <th scope="row">1</th>
-            <td>Revenue per user</td>
-            <td><span id="revenuePerUser">0.00$</span></td>
-          </tr>
-          <tr>
-            <th scope="row">1</th>
-            <td>User CPI</td>
-            <td><span id="userCPI">0.00$</span></td>
-          </tr>
-          <tr>
-            <th scope="row">1</th>
-            <td>ROAS</td>
-            <td><span id="roas">0.00%</span></td>
-          </tr>
-        </tbody>
-      </table>
     </div>
 
     <div class="col">
@@ -700,6 +730,20 @@
     drawChartByDictionary("chartRevenuePerUser", "Revenue Per User", dicRevenuePerUser);
     drawChartByDictionary("chartImpressionPerUser", "Impression Per User", dicImpressionPerUser);
     drawChartByDictionary("chartImpressionPerSession", "Impression Per Session", dicImpressionPerSession);
+
+    $("#revenueThisVersion").text(dicRevenue["total"].toFixed(4) + "$");
+    $("#revenuePerUser").text(dicRevenuePerUser["total"].toFixed(4) + "$");
+
+    $("#revenueInterPerUser").text(dicImpressionPerUser["intertistial"].toFixed(2));
+    $("#revenueRewardPerUser").text(dicImpressionPerUser["rewarded"].toFixed(2));
+    $("#revenueAppOpenPerUser").text(dicImpressionPerUser["app open"].toFixed(2));
+    $("#revenueBannerPerUser").text(dicImpressionPerUser["banner"].toFixed(2));
+
+    $("#revenueImpressionPerUser").text(dicImpressionPerUser["total"].toFixed(4));
+    $("#revenuePerUser").text(dicRevenuePerUser["total"].toFixed(4) + "$");
+    
+    // $("#userCPI").text(userCPI.toFixed(4) + "$");
+    // $("#roas").text(roas + "%");
   }
 
   function count(dic, key){
