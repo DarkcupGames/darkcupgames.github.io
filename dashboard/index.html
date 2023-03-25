@@ -343,17 +343,17 @@
   <legend>
     <span class="" style="font-size: large;">User Session Snapshots</span>
   </legend>
-  <!-- <div class="chip-group" tabindex="-1" role="radiogroup" id="versionChip"> -->
-  <!-- </div> -->
 </fieldset>
 
+<div id="userSessionGroup">
   <div class="row ">
-    <div class="col">
-      <!-- <canvas id="chartTest" style="max-width:700px;"></canvas> -->
+    <div class="col-4">
+
     </div>
-    <div class="col">
-      <canvas id="chartTest" style="max-width:700px;"></canvas>
+    <div class="col-8">
+      <canvas id="chartUserSession_" style="max-width:700px;"></canvas>
     </div>
+  </div>
 </div>
 
 <div class="row ">
@@ -616,27 +616,31 @@
     let project = $('input[name=project]:checked').val();
     let versionData = dicSessionDatas[project][version];
     console.log(versionData);
-    $("#testHere").text(versionData);
+    // $("#testHere").text(versionData);
+    $('#userSessionGroup').children().remove();
+
     for (const userId in versionData) {
       let user = versionData[userId];
       for (const sessionId in user) {
         let session = user[sessionId];
         console.log("this is user id: " + session["id"]);
-
-        let actions = session["actions"];
-
-        drawActionBoard(actions);
+        // let actions = session["actions"];
+        drawActionBoard(session);
       }
     }
   }
 
-  function drawActionBoard(actions){
+  function drawActionBoard(session){
+    let isRealUser = session['installer'] == 'com.android.vending';
+    if (isRealUser == false) return;
+
+    let actions = session["actions"];
     let colors = [];
     let values = [];
     let names = [];
 
     for (let i = 0; i < actions.length; i++) {
-      let color = "blue";
+      let color = "transparent";
 
       let action = actions[i];
       if (action.includes("level")){
@@ -660,7 +664,19 @@
       names.push(action);
     }
 
-    drawChartWithColors("chartTest", "test action", names, values, colors);
+    let chartName = "chartUserSession_" + session["id"];
+    let htmlPattern = 
+    `  <div class="row ">
+        <div class="col-4">
+
+        </div>
+        <div class="col-8">
+          <canvas id="${chartName}" style="max-width:700px;"></canvas>
+        </div>
+    </div>`;
+    $('#userSessionGroup').append(htmlPattern);
+
+    drawChartWithColors(chartName, "User action snapshot", names, values, colors);
   }
 
   let dicLevel = {};
