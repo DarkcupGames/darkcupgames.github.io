@@ -62,11 +62,11 @@
     </div>
 
     <div class="col">
-      <!-- <canvas id="chartPlayTimeAvg" style="width:100%;max-width:700px"></canvas> -->
+      <canvas id="chartRevenuePerUserEachVersion" style="width:100%;max-width:700px"></canvas>
     </div>
 
     <div class="col">
-      <!-- <canvas id="chartPlayTimeAvg" style="width:100%;max-width:700px"></canvas> -->
+      <canvas id="chartImpressionPerUserEachVersion" style="width:100%;max-width:700px"></canvas>
     </div>
 
   </div>
@@ -298,7 +298,6 @@
     <div class="col">
       <div class="row">
         <canvas id="chartRevenue" style="width:100%;max-width:700px"></canvas>
-        <!-- <canvas id="chartRevenuePerUser" style="width:100%;max-width:700px"></canvas> -->
       </div>
 
       <div class="row">
@@ -309,7 +308,6 @@
 
     <div class="col">
       <div class="row">
-        <!-- <canvas id="chartRevenue" style="width:100%;max-width:700px"></canvas> -->
         <canvas id="chartRevenuePerUser" style="width:100%;max-width:700px"></canvas>
       </div>
 
@@ -321,9 +319,9 @@
   </div>
 
   <div class="row ">
-
-  
-
+    <div class="col">
+      <canvas id="chartUserAction_1" style="width:100%;max-width:700px"></canvas>
+    </div>
 </div>
 <script>
   var projectConfig = {};
@@ -404,6 +402,8 @@
   let playTimes = [];
   let sessionCounts = [];
   let playTimeEachSessions = [];
+  let revenuePerUser = [];
+  let intertistialPerUser = [];
 
   function updateProjectData(rawData) {
     versions = [];
@@ -412,19 +412,18 @@
     playTimes = [];
     sessionCounts = [];
     playTimeEachSessions = [];
+    revenuePerUser = [];
+    intertistialPerUser = [];
+
+    let gameTotalRevenue = 0;
 
     console.log("raw data = ");
     console.log(rawData);
 
-    // $('#dataUser').text('');
     $('#versionChip').children().remove();
 
     for (const versionName in rawData) {
-      console.log(`${versionName}: ${rawData[versionName]}`);
       let userdata = rawData[versionName];
-      console.log("get userdata for version " + versionName);
-      console.log(userdata);
-      console.log("userdata length = " + Object.keys(userdata).length);
       calculateAll(userdata);
       versions.push(versionName);
       userCounts.push(userCount);
@@ -438,6 +437,11 @@
         sessionCounts.push(sessionEachUser.toFixed(2));
         playTimeEachSessions.push((playTimeEachUser / sessionEachUser).toFixed(2));
 
+        calculateRevenue(userdata);
+        gameTotalRevenue += totalRevenue;
+        revenuePerUser.push(totalRevenue / userCount);
+        intertistialPerUser.push(impressionIntertistial / userCount);
+
         let htmlPattern = `<div class="chip chip-checkbox" aria-labelledby="${versionName}" tabindex="0" role="radio"
                 aria-checked="false" onclick="updateVersionData('${versionName}')">
                 <input type="radio" id="${versionName}" name="version" value="${versionName}"/>
@@ -447,10 +451,12 @@
       }
     }
     drawChart("chartNumberUser", "Số lượng user", versions, userCounts);
-
     drawChart("chartPlayTime", "Tổng thời gian chơi (phút)", versionHaveUsers, playTimes);
     drawChart("chartSessionCount", "Số lượng session", versionHaveUsers, sessionCounts);
     drawChart("chartPlayTimeAvg", "Thời gian chơi mỗi session", versionHaveUsers, playTimeEachSessions);
+    drawChart("chartRevenuePerUserEachVersion", "Doanh thu trên mỗi user", versionHaveUsers, revenuePerUser);
+    drawChart("chartImpressionPerUserEachVersion", "Số quảng cáo inter trên mỗi user", versionHaveUsers, intertistialPerUser);    
+    $('#revenueTotal').text(gameTotalRevenue.toFixed(4));
   }
 
   let dicUserDate = {};
@@ -629,23 +635,39 @@
     drawChartByDictionary("chartLevelDropPercent", "User Give Up Percent by level", dicUserDropPercent);
   }
 
+  let revenueBanner = 0;
+  let revenueIntertistial = 0;
+  let revenueRewarded = 0;
+  let revenueAppOpen = 0;
+  let sessionCount = 0;
+
+  let impressionBanner = 0;
+  let impressionIntertistial = 0;
+  let impressionRewarded = 0;
+  let impressionAppOpen = 0;
+  let totalRevenue = 0;
+  let totalImpression = 0;
+
   function calculateRevenue(versionData){
     dicRevenue = {};
     dicRevenuePerUser = {};
     dicImpressionPerUser = {};
     dicImpressionPerSession = {};
 
-    let revenueBanner = 0;
-    let revenueIntertistial = 0;
-    let revenueRewarded = 0;
-    let revenueAppOpen = 0;
-    let userCount = 0;
-    let sessionCount = 0;
+    revenueBanner = 0;
+    revenueIntertistial = 0;
+    revenueRewarded = 0;
+    revenueAppOpen = 0;
+    sessionCount = 0;
 
-    let impressionBanner = 0;
-    let impressionIntertistial = 0;
-    let impressionRewarded = 0;
-    let impressionAppOpen = 0;
+    impressionBanner = 0;
+    impressionIntertistial = 0;
+    impressionRewarded = 0;
+    impressionAppOpen = 0;
+
+    totalRevenue = 0;
+
+    let userCount = 0;
 
     for (const userId in versionData) {
       let user = versionData[userId];
@@ -655,6 +677,8 @@
       userCount++;
       sessionCount += user["sessionCount"];
       let revenue = user["revenue"];
+      if (revenue == null) continue;
+
       revenueBanner += revenue["bannerRevenue"];
       revenueIntertistial += revenue["interRevenue"];
       revenueRewarded += revenue["rewardRevenue"];
@@ -667,8 +691,8 @@
       
       console.log("revenue detail = " + revenue);
     }
-    let totalRevenue = revenueAppOpen + revenueBanner + revenueIntertistial + revenueRewarded;
-    let totalImpression = impressionBanner + impressionAppOpen + impressionIntertistial + impressionRewarded;
+    totalRevenue = revenueAppOpen + revenueBanner + revenueIntertistial + revenueRewarded;
+    totalImpression = impressionBanner + impressionAppOpen + impressionIntertistial + impressionRewarded;
 
     dicRevenue["total"] = totalRevenue;
     dicRevenue["banner"] = revenueBanner;
@@ -708,10 +732,6 @@
     $("#revenueBannerPerUser").text(dicImpressionPerUser["banner"].toFixed(2));
 
     $("#revenueImpressionPerUser").text(dicImpressionPerUser["total"].toFixed(4));
-    // $("#revenuePerUser").text(dicRevenuePerUser["total"].toFixed(4));
-    
-    // $("#userCPI").text(userCPI.toFixed(4) + "$");
-    // $("#roas").text(roas + "%");
   }
 
   function count(dic, key){
@@ -732,25 +752,25 @@
     }
   }
 
-  function calculateRevenue1(){
-    let adSpend = $("#inputAdSpend").val();
-    console.log("ad spend = " + adSpend);
-    let totalRevenue = $("#inputRevenue").val();
-    console.log("total revenue = " + totalRevenue);
-    console.log("user count = " + dicRetentionCohort[0]);
-    let revenuePerUser = totalRevenue / dicRetentionCohort[0];
-    console.log("revenue per user = " + revenuePerUser.toFixed(2));
-    console.log("money spend: " + adSpend);
-    let userCPI = adSpend / dicRetentionCohort[0];
-    console.log("user CPI = " + userCPI.toFixed(2));
-    let roas = (revenuePerUser / userCPI * 100).toFixed(2);
-    console.log("revenue per CPI = " + roas + "%");
+  // function calculateRevenue1(){
+  //   let adSpend = $("#inputAdSpend").val();
+  //   console.log("ad spend = " + adSpend);
+  //   let totalRevenue = $("#inputRevenue").val();
+  //   console.log("total revenue = " + totalRevenue);
+  //   console.log("user count = " + dicRetentionCohort[0]);
+  //   let revenuePerUser = totalRevenue / dicRetentionCohort[0];
+  //   console.log("revenue per user = " + revenuePerUser.toFixed(2));
+  //   console.log("money spend: " + adSpend);
+  //   let userCPI = adSpend / dicRetentionCohort[0];
+  //   console.log("user CPI = " + userCPI.toFixed(2));
+  //   let roas = (revenuePerUser / userCPI * 100).toFixed(2);
+  //   console.log("revenue per CPI = " + roas + "%");
 
-    $("#userAcquisition").text(dicRetentionCohort[0]);
-    $("#revenuePerUser").text(revenuePerUser.toFixed(4) + "$");
-    $("#userCPI").text(userCPI.toFixed(4) + "$");
-    $("#roas").text(roas + "%");
-  }
+  //   $("#userAcquisition").text(dicRetentionCohort[0]);
+  //   $("#revenuePerUser").text(revenuePerUser.toFixed(4) + "$");
+  //   $("#userCPI").text(userCPI.toFixed(4) + "$");
+  //   $("#roas").text(roas + "%");
+  // }
 
   function drawChartByDictionary(chartName, title, dic){
     let columnNames = [];
@@ -798,7 +818,7 @@
     return chart;
   }
 
-  const MIN_NUMBER_USER_ANALYTICS = 10;
+  const MIN_NUMBER_USER_ANALYTICS = 5;
 
   let retentionDay0 = 0;
   let retentionDay1 = 0;
