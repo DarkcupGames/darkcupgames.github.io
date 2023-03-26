@@ -358,6 +358,10 @@
       <div class="row">
         <canvas id="chartImpressionPerUser" style="width:100%;max-width:700px"></canvas>
       </div>
+
+      <div class="row">
+        <canvas id="chartRevenuePerImpression" style="width:100%;max-width:700px"></canvas>
+      </div>
       
     </div>
 
@@ -986,9 +990,16 @@
   let totalRevenue = 0;
   let totalImpression = 0;
 
+  let dicRevenue = {};
+  let dicRevenuePerUser = {};
+  let dicRevenuePerImpression = {};
+  let dicImpressionPerUser = {};
+  let dicImpressionPerSession = {};
+
   function calculateRevenue(versionData){
     dicRevenue = {};
     dicRevenuePerUser = {};
+    dicRevenuePerImpression = {};
     dicImpressionPerUser = {};
     dicImpressionPerSession = {};
 
@@ -1044,6 +1055,12 @@
     dicRevenuePerUser["rewarded"] = revenueRewarded / userCount;
     dicRevenuePerUser["app open"] = revenueAppOpen / userCount;
 
+    dicRevenuePerImpression["total"] = totalRevenue / totalImpression;
+    dicRevenuePerImpression["banner"] = revenueBanner / impressionBanner;
+    dicRevenuePerImpression["intertistial"] = revenueIntertistial / impressionIntertistial;
+    dicRevenuePerImpression["rewarded"] = revenueRewarded / impressionRewarded;
+    dicRevenuePerImpression["app open"] = revenueAppOpen / impressionAppOpen;
+
     dicImpressionPerUser["total"] = totalImpression / userCount;
     dicImpressionPerUser["banner"] = impressionBanner / userCount;
     dicImpressionPerUser["intertistial"] = impressionIntertistial / userCount;
@@ -1058,6 +1075,7 @@
 
     drawChartByDictionary("chartRevenue", "Revenue", dicRevenue);
     drawChartByDictionary("chartRevenuePerUser", "Revenue Per User", dicRevenuePerUser);
+    drawChartByDictionary("chartRevenuePerImpression", "Revenue Per Impression", dicRevenuePerImpression);
     drawChartByDictionary("chartImpressionPerUser", "Impression Per User", dicImpressionPerUser);
     drawChartByDictionary("chartImpressionPerSession", "Impression Per Session", dicImpressionPerSession);
 
