@@ -154,6 +154,33 @@
   <div class="separator"></div>
   <fieldset>
     <legend>
+      <span class="" style="font-size: large;">User Status</span>
+    </legend>
+    <!-- <div class="chip-group" tabindex="-1" role="radiogroup" id="versionChip"> -->
+    <!-- </div> -->
+  </fieldset>
+
+
+
+  <div class="row ">
+    
+    
+    <div class="col">
+      <canvas id="chartUserProperty" style="width:100%;max-width:700px"></canvas>
+    </div>
+
+    <div class="col">
+      <canvas id="chartUserPropertyPercent" style="width:100%;max-width:700px"></canvas>
+    </div>
+
+    <div class="col">
+      <!-- <canvas id="chartQuitReason_IntertistialAds" style="width:100%;max-width:700px"></canvas> -->
+    </div>
+  </div>
+
+  <div class="separator"></div>
+  <fieldset>
+    <legend>
       <span class="" style="font-size: large;">Retention and Language</span>
     </legend>
     <!-- <div class="chip-group" tabindex="-1" role="radiogroup" id="versionChip"> -->
@@ -161,8 +188,6 @@
   </fieldset>
 
   <div class="row ">
-    
-    
     <div class="col">
       <canvas id="chartRetentionCohort" style="width:100%;max-width:700px"></canvas>
     </div>
@@ -331,12 +356,6 @@
       
     </div>
   </div>
-
-  <!-- <div class="row ">
-    <div class="col">
-      <canvas id="chartUserAction_1" style="width:100%;max-width:700px"></canvas>
-    </div>
-</div> -->
 
 <div class="separator"></div>
 <fieldset>
@@ -603,15 +622,16 @@
     drawChartByDictionary("chartRetention", "Retention user", dicRetention);
     drawChartByDictionary("chartRetentionCohort", "Retention user by cohort", dicRetentionCohort);
     drawChartByDictionary("chartRetentionPercent", "Retention user by cohort (%)", dicRetentionPercent);
-    // drawChartByDictionary("chartUserPlayDay", "Day count since first play", dicPlayDayCount);
     $('#retentionD1').text(dicRetentionPercent[1] + "%");
     $('#retentionD3').text(dicRetentionPercent[3] + "%");
     $('#retentionD7').text(dicRetentionPercent[7] + "%");
     $('#retentionD30').text(dicRetentionPercent[30] + "%");
-    // $('#dataUser').text(JSON.stringify(str));
 
     showUserSessionSnapShot(version);
+    calculateUserProperty(version);
   }
+
+  let countUserTrash = 0;
 
   function showUserSessionSnapShot(version){
     let project = $('input[name=project]:checked').val();
@@ -623,6 +643,10 @@
       let index = 0;
       for (const sessionId in user) {
         let session = user[sessionId];
+        let actions = session["actions"];
+        if (actions == null){
+          countUserTrash++;
+        }
         drawActionBoard(session, index);
         index++;
       }
@@ -723,6 +747,9 @@
   let dicLevelCount = {};
   let dicUserDropPercent = {};
   let dicLevelPlayCount = {};
+
+  let countUserNoob = 0;
+  let playTimeUserNoob = 0;
   
   function calculateLevel(versionData){
     dicLevel = {};
@@ -732,6 +759,8 @@
     dicLevelTimeSpent = {};    
     dicUserDropPercent = {};
     dicLevelPlayCount = {};
+
+    countUserNoob = 0;
 
     let userCount = 0;
     let maxLevel = 0;
@@ -752,14 +781,19 @@
       for (let i = 0; i <= level; i++) {
         count(dicLevelCount, i);
       }
-      
+      let isNoob = false;
       for (const level in winlose) {
         let winloseData = winlose[level];
         add(dicLose, level, winloseData["loseCount"]);
         add(dicWin, level, winloseData["winCount"]);
         add(dicLevelTimeSpent, level, winloseData["timeSpent"]);
         count(dicLevelPlayCount, level);
+
+        if (dicLose[level] >= 3 && level < 3){
+          isNoob = true;
+        }
       }
+      if (isNoob) countUserNoob++;
     }
 
     for (let i = 1; i <= maxLevel; i++) {
@@ -794,6 +828,24 @@
     drawChartByDictionary("chartLevelDropPercent", "User Give Up Percent by level", dicUserDropPercent);
   }
 
+  function isNoobUser(userData){
+    let winlose = user["winloseDatas"];
+    if (winlose == null) return true;
+
+    let isNoob = false;
+    let loseCount = 0;
+
+    for (const level in winlose) {
+      let winloseData = winlose[level];
+      loseCount += winloseData["loseCount"];
+      if (loseCount >= 3 && level < 3){
+        isNoob = true;
+      }
+    }
+
+    return isNoob;
+  }
+
   let dicQuitReason = {};
   let dicQuitReason_BoringGameplay = {};
   let dicQuitReason_IntertistialAds = {};
@@ -825,6 +877,60 @@
     drawChartByDictionary("chartQuitReason", "Quit Reason", dicQuitReason);
     drawChartByDictionary("chartQuitReason_BoringGameplay", "Quit Boring Gameplay by level", dicQuitReason_BoringGameplay);
     drawChartByDictionary("chartQuitReason_IntertistialAds", "Quit Intertistial Ads by level", dicQuitReason_IntertistialAds);
+  }
+
+  let dicUserProperty = {};
+  let dicUserPropertyPercent = {};
+
+  function calculateUserProperty(version){
+    let project = $('input[name=project]:checked').val();
+    let versionData = dicProjectDatas[project][version];
+    let sessionData = dicSessionDatas[project][version];
+
+    let userCount = 0;
+    let userTrashCount = 0;
+    let userHaveSessions = [];
+
+    dicUserProperty = {};;
+    dicUserPropertyPercent = {};
+
+    for (const userId in sessionData) {
+      let data = sessionData[userId];
+      let index = 0;
+      for (const sessionId in data) {
+        let session = data[sessionId];
+        let actions = session["actions"];
+        let id = session["id"];
+
+        if (userHaveSessions.includes(id) == false) {
+          userHaveSessions.push(id);
+        }
+      }
+    }
+
+    for (const userId in versionData) {
+      let user = versionData[userId];
+      let isRealUser = user['installerName'] == 'com.android.vending';
+      if (isRealUser == false) continue;
+      userCount++;
+
+      if (userHaveSessions.includes(user["id"]) == false){
+        countUserTrash++;
+      }
+    }
+
+    dicUserProperty = {};
+    dicUserProperty["total"] = userCount;
+    dicUserProperty["user trash"] = countUserTrash;
+    dicUserProperty["user noob"] = countUserNoob;
+
+    dicUserPropertyPercent = {};
+    dicUserPropertyPercent["total"] = userCount / userCount * 100; 
+    dicUserPropertyPercent["user trash"] = (countUserTrash / userCount * 100).toFixed(2);
+    dicUserPropertyPercent["user noob"] = (countUserNoob / userCount * 100).toFixed(2);
+
+    drawChartByDictionary("chartUserProperty", "User by property", dicUserProperty);
+    drawChartByDictionary("chartUserPropertyPercent", "User by property percent", dicUserPropertyPercent);
   }
 
   let revenueBanner = 0;
