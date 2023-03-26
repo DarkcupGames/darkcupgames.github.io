@@ -94,11 +94,11 @@
 
 
   <div class="row ">
-    
-    
+
     <div class="col">
-      <canvas id="chartUserLevel" style="width:100%;max-width:700px"></canvas>
+      <canvas id="chartUserLevelCount" style="width:100%;max-width:700px"></canvas>
     </div>
+
 
     <div class="col">
       <canvas id="chartLevelLose" style="width:100%;max-width:700px"></canvas>
@@ -107,13 +107,13 @@
     <div class="col">
       <canvas id="chartLevelTimeSpent" style="width:100%;max-width:700px"></canvas>
     </div>
+
   </div>
 
   <div class="row ">
     
-    
     <div class="col">
-      <canvas id="chartUserLevelCount" style="width:100%;max-width:700px"></canvas>
+      <canvas id="chartUserByLosePercent" style="width:100%;max-width:700px"></canvas>
     </div>
 
     <div class="col">
@@ -122,6 +122,22 @@
 
     <div class="col">
       <canvas id="chartLevelDropPercent" style="width:100%;max-width:700px"></canvas>
+    </div>
+  </div>
+
+
+  <div class="row ">
+    
+    <div class="col">
+      <canvas id="chartUserPlayTimeByLosePercent" style="width:100%;max-width:700px"></canvas>
+    </div>
+
+    <div class="col">
+      <!-- <canvas id="chartLevelWinPercent" style="width:100%;max-width:700px"></canvas> -->
+    </div>
+
+    <div class="col">
+      <!-- <canvas id="chartLevelDropPercent" style="width:100%;max-width:700px"></canvas> -->
     </div>
   </div>
 
@@ -524,12 +540,12 @@
         $('#versionChip').append(htmlPattern);
       }
     }
-    drawChart("chartNumberUser", "Số lượng user", versions, userCounts);
-    drawChart("chartPlayTime", "Tổng thời gian chơi (phút)", versionHaveUsers, playTimes);
-    drawChart("chartSessionCount", "Số lượng session", versionHaveUsers, sessionCounts);
-    drawChart("chartPlayTimeAvg", "Thời gian chơi mỗi session", versionHaveUsers, playTimeEachSessions);
-    drawChart("chartRevenuePerUserEachVersion", "Doanh thu trên mỗi user", versionHaveUsers, revenuePerUser);
-    drawChart("chartImpressionPerUserEachVersion", "Số quảng cáo inter trên mỗi user", versionHaveUsers, intertistialPerUser);    
+    drawChart("chartNumberUser", "Number of user", versions, userCounts);
+    drawChart("chartPlayTime", "Avg total play time avg (minute)", versionHaveUsers, playTimes);
+    drawChart("chartSessionCount", "Session count per user", versionHaveUsers, sessionCounts);
+    drawChart("chartPlayTimeAvg", "Play time per session", versionHaveUsers, playTimeEachSessions);
+    drawChart("chartRevenuePerUserEachVersion", "Revenue per user", versionHaveUsers, revenuePerUser);
+    drawChart("chartImpressionPerUserEachVersion", "Intertistial count per user", versionHaveUsers, intertistialPerUser);    
     $('#revenueTotal').text(gameTotalRevenue.toFixed(4));
   }
 
@@ -616,9 +632,9 @@
     calculateQuitReason(versionData);
     calculateRevenue(versionData);
 
-    drawChartByDictionary("chartUserByDay","Số user mới theo ngày", dicUserDate);
-    drawChartByDictionary("chartLanguage", "Số user theo ngôn ngữ", dicLanguage);
-    drawChartByDictionary("chartLanguagePlayTime", "Thời gian chơi theo từng ngôn ngữ (phút)", dicLanguagePlayTime);
+    drawChartByDictionary("chartUserByDay","New user by day", dicUserDate);
+    drawChartByDictionary("chartLanguage", "User by language", dicLanguage);
+    drawChartByDictionary("chartLanguagePlayTime", "Play time by language (minute)", dicLanguagePlayTime);
     drawChartByDictionary("chartRetention", "Retention user", dicRetention);
     drawChartByDictionary("chartRetentionCohort", "Retention user by cohort", dicRetentionCohort);
     drawChartByDictionary("chartRetentionPercent", "Retention user by cohort (%)", dicRetentionPercent);
@@ -747,6 +763,7 @@
   let dicLevelCount = {};
   let dicUserDropPercent = {};
   let dicLevelPlayCount = {};
+  let dicUserByLosePercent = {};
 
   let countUserNoob = 0;
   let playTimeUserNoob = 0;
@@ -759,6 +776,8 @@
     dicLevelTimeSpent = {};    
     dicUserDropPercent = {};
     dicLevelPlayCount = {};
+    dicUserByLosePercent = {};
+    dicUserPlaytimeByLosePercent = {};
 
     countUserNoob = 0;
 
@@ -781,19 +800,29 @@
       for (let i = 0; i <= level; i++) {
         count(dicLevelCount, i);
       }
+
       let isNoob = false;
+      let sumLose = 0;
+      let sumLevelPlayCount = 0;
+
       for (const level in winlose) {
         let winloseData = winlose[level];
         add(dicLose, level, winloseData["loseCount"]);
         add(dicWin, level, winloseData["winCount"]);
         add(dicLevelTimeSpent, level, winloseData["timeSpent"]);
         count(dicLevelPlayCount, level);
-
+        sumLose += winloseData["loseCount"];
+        sumLevelPlayCount += winloseData["loseCount"] + winloseData["winCount"];
         if (dicLose[level] >= 3 && level < 3){
           isNoob = true;
         }
       }
       if (isNoob) countUserNoob++;
+
+      let losePercent = Math.floor((sumLose / sumLevelPlayCount).toFixed(2)*100);
+      // console.log("user lose percent = " + losePercent);
+      count(dicUserByLosePercent, losePercent);
+      add(dicUserPlaytimeByLosePercent, losePercent, user["totalPlayTime"]);
     }
 
     for (let i = 1; i <= maxLevel; i++) {
@@ -820,12 +849,23 @@
       dicLevelTimeSpent[key] = dicLevelTimeSpent[key] / dicLevelPlayCount[key];
     }
 
-    drawChartByDictionary("chartUserLevel", "User by level", dicLevel);
+    for (const key in dicUserPlaytimeByLosePercent) {
+      let avgPlayTime = dicUserPlaytimeByLosePercent[key] / dicUserByLosePercent[key];
+      dicUserPlaytimeByLosePercent[key] = (avgPlayTime / 60).toFixed(2);
+    }
+
+    console.log("finish, dicUserPlaytimeByLosePercent = ");
+    console.log(dicUserPlaytimeByLosePercent);
+
+    //chartPlayTimeByLoseLevel
+    // drawChartByDictionary("chartUserLevel", "User by level", dicLevel);
     drawChartByDictionary("chartUserLevelCount", "Number user pass level", dicLevelCount);
-    drawChartByDictionary("chartLevelLose", "Lose Level Per User", dicLosePerUser);
+    drawChartByDictionary("chartLevelLose", "Lose Level Count Per User", dicLosePerUser);
     drawChartByDictionary("chartLevelTimeSpent", "Level Time Spent Per User", dicLevelTimeSpent);
     drawChartByDictionary("chartLevelWinPercent", "Level Win Percent", dicWinPercent);
     drawChartByDictionary("chartLevelDropPercent", "User Give Up Percent by level", dicUserDropPercent);
+    drawChartByDictionary("chartUserByLosePercent", "User count by lose percent", dicUserByLosePercent);
+    drawChartByDictionary("chartUserPlayTimeByLosePercent", "User play time by lose percent", dicUserPlaytimeByLosePercent);
   }
 
   function isNoobUser(userData){
