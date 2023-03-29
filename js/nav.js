@@ -24,6 +24,10 @@ function retentionTool() {
     window.location.assign('/retentiontool');
 }
 
+function strategy() {
+    window.location.assign('/strategy');
+}
+
 function home() {
     window.location.assign('/dashboard');
 }
