@@ -43,30 +43,45 @@
   <div class="separator" style="height: 100px;"></div>
 
   <div class="row ">
-    <div class="col">
-      <canvas id="chartNumberUser" style="width:100%;max-width:700px"></canvas>
+    <div class="col-3">
+      <canvas id="chartNumberUser" style="max-width:700px"></canvas>
     </div>
 
-    <div class="col">
-      <canvas id="chartPlayTime" style="width:100%;max-width:700px"></canvas>
+    <div class="col-3">
+      <canvas id="chartPlayTime" style="max-width:700px"></canvas>
     </div>
-    <div class="col">
-      <canvas id="chartSessionCount" style="width:100%;max-width:700px"></canvas>
+    <div class="col-3">
+      <canvas id="chartSessionCount" style="max-width:700px"></canvas>
     </div>
+
+    <div class="col-3">
+      <canvas id="chartPlayTimeAvg" style="max-width:700px"></canvas>
+    </div>
+
   </div>
+
   <div class="row ">
 
-    <div class="col">
-      <canvas id="chartPlayTimeAvg" style="width:100%;max-width:700px"></canvas>
-    </div>
+
 
     <div class="col">
-      <canvas id="chartRevenuePerUserEachVersion" style="width:100%;max-width:700px"></canvas>
-    </div>
-
-    <div class="col">
+      <!-- <canvas id="chartRevenuePerUserEachVersion" style="width:100%;max-width:700px"></canvas> -->
       <canvas id="chartImpressionPerUserEachVersion" style="width:100%;max-width:700px"></canvas>
     </div>
+
+    <div class="col">
+      
+    </div>
+
+    <div class="col">
+      <!-- <canvas id="chartImpressionPerUserEachVersion" style="width:100%;max-width:700px"></canvas> -->
+    </div>
+
+
+    <div class="col">
+      <!-- <canvas id="chartImpressionPerUserEachVersion" style="width:100%;max-width:700px"></canvas> -->
+    </div>
+
 
   </div>
 
@@ -104,11 +119,14 @@
     </div>
 
     <div class="col">
-      <canvas id="chartLevelWinPercent" style="width:100%;max-width:700px"></canvas>
+
+      <canvas id="chartLevelDropPercent" style="width:100%;max-width:700px"></canvas>
+      <!-- <canvas id="chartLevelWinPercent" style="width:100%;max-width:700px"></canvas> -->
     </div>
 
     <div class="col">
-      <canvas id="chartLevelDropPercent" style="width:100%;max-width:700px"></canvas>
+
+      <canvas id="chartUserPlayTimeByLosePercent" style="width:100%;max-width:700px"></canvas>
     </div>
   </div>
 
@@ -116,7 +134,7 @@
   <div class="row ">
     
     <div class="col">
-      <canvas id="chartUserPlayTimeByLosePercent" style="width:100%;max-width:700px"></canvas>
+    
     </div>
 
     <div class="col">
@@ -825,7 +843,7 @@
       let percent = (1 - dicLevelCount[i]/dicLevelCount[i-1]) *100;
       dicUserDropPercent[i-1] = percent.toFixed(2);
     }
-    dicUserDropPercent[maxLevel] = 100;
+    // dicUserDropPercent[maxLevel] = 100;
 
     let dicWinPercent = {};
 
@@ -889,6 +907,7 @@
   function calculateQuitReason(versionData){
     dicQuitReason = {};
 
+    userCount = 0;
     for (const userId in versionData) {
       let user = versionData[userId];
       let isRealUser = user['installerName'] == 'com.android.vending';
@@ -910,7 +929,10 @@
       }
     }
 
-    drawChartByDictionary("chartQuitReason", "Quit Reason", dicQuitReason);
+    for (const key in dicQuitReason) {
+      dicQuitReason[key] = ((dicQuitReason[key] / userCount) *100).toFixed(2);
+    }
+    drawChartByDictionary("chartQuitReason", "Quit Reason (%)", dicQuitReason);
     drawChartByDictionary("chartQuitReason_BoringGameplay", "Quit Boring Gameplay by level", dicQuitReason_BoringGameplay);
     drawChartByDictionary("chartQuitReason_IntertistialAds", "Quit Intertistial Ads by level", dicQuitReason_IntertistialAds);
   }
