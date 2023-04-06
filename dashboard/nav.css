@@ -114,6 +114,18 @@ body {
   border-radius: 100%;
   border-style: solid;
 }
+
+.floating-group{
+  /* background: #599fd9;
+  background: -webkit-linear-gradient(to right, #dadada, #bbbbbb);
+  background: linear-gradient(to right, #dadada, #bbbbbb); */
+  position: fixed;
+  top: 0px; 
+  padding-top: 20px; 
+  /* background-color: #212529;  */
+  width: 100%;
+}
+
 @keyframes spin {
   0% {
       -webkit-transform: rotate(0);
