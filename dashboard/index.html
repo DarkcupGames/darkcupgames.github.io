@@ -95,7 +95,37 @@
   </fieldset>
   <div class="row ">
     <div class="col-4">
-      
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">1</th>
+            <td>Total Ad Spend</td>
+            <td><span id="marketStatus_adSpend">30%</span></td>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <td>Total Revenue</td>
+            <td><span id="marketStatus_revenue">30%</span></td>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <td>Total Profit/Loss</td>
+            <td><span id="marketStatus_profit">30%</span></td>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <td>ROAS</td>
+            <td><span id="marketStatus_roas">30%</span></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
     <div class="col-8">
       <canvas id="chartMarketingStatus" style="width:100%;"></canvas>
@@ -519,13 +549,17 @@
     let dicProfit = {};
     let allKey = [];
 
+    let totalRevenue = 0;
+    let totalAdSpend = 0;
+    let totalProfit = 0;
+
     for (const mKey in adSpend){
       let month = adSpend[mKey];
       for (const dKey in month){
         let date = mKey + dKey;
         let value = month[dKey];
         dicAdSpend[date] = value;
-
+        totalAdSpend += value;
         if (allKey.includes(date) == false) allKey.push(date);
       }
     }
@@ -536,10 +570,11 @@
         let date = mKey + dKey;
         let value = month[dKey];
         dicRevenue[date] = value;
-
+        totalRevenue += value;
         if (allKey.includes(date) == false) allKey.push(date);
       }
     }
+    totalProfit = totalRevenue - totalAdSpend;
     console.log("all key: ");
     console.log(allKey);
     console.log("dic ad spend");
@@ -563,7 +598,20 @@
     console.log("profit:");
     console.log(finalProfit);
 
+    $("#marketStatus_profit").text(formatCurrentcy(totalProfit));
+    $("#marketStatus_revenue").text(formatCurrentcy(totalRevenue));
+    $("#marketStatus_adSpend").text(formatCurrentcy(totalAdSpend));
+    $("#marketStatus_roas").text((totalRevenue/totalAdSpend*100).toFixed(2)+ "%");
     drawMarketingChart("chartMarketingStatus", allKey, finalAdSpend, finalRevenue, finalProfit);
+  }
+
+  function formatCurrentcy(number){
+    number = number.toFixed(2);
+    if (number > 0) return "$" + number;
+    else {
+      number = -number;
+      return "-$" + number;
+    }
   }
 
   function querySessionData(project){
