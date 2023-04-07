@@ -85,6 +85,31 @@
 
 
   </div>
+  <div class="separator"></div>
+  <fieldset>
+    <legend>
+      <span class="" style="font-size: large;">Marketing Status</span>
+    </legend>
+    <!-- <div class="chip-group" tabindex="-1" role="radiogroup" id="versionChip"> -->
+    <!-- </div> -->
+  </fieldset>
+  <div class="row ">
+
+    <canvas id="chartMarketingStatus" style="width:100%;"></canvas>
+    <!-- <div class="col">
+      
+    </div>
+
+
+    <div class="col">
+      <canvas id="chartLevelLose" style="width:100%;max-width:700px"></canvas>
+    </div>
+
+    <div class="col">
+      <canvas id="chartLevelTimeSpent" style="width:100%;max-width:700px"></canvas>
+    </div> -->
+
+  </div>
 
   <div class="separator"></div>
   <fieldset>
@@ -403,9 +428,9 @@
 
 <div class="row ">
 <script>
-  var projectConfig = {};
-  var allData = [];
   var dicProjectDatas = {};
+  var allData = [];
+  var dicUserDatas = {};
   var dicSessionDatas = {};
   var dicCharts = {};
 
@@ -438,9 +463,9 @@
         firstKey = childSnapshot.key;
       }
       var keystr = childSnapshot.key;
-      var value = childSnapshot.val();
-      projectConfig[keystr] = value;
-      firebase.initializeApp(value, keystr);
+      dicProjectDatas[keystr] = childSnapshot.val();
+      var config = dicProjectDatas[keystr] ["connection"];
+      firebase.initializeApp(config, keystr);
       defaultProject = keystr;
 
       let htmlPattern = `<div class="chip chip-checkbox" aria-labelledby="${keystr}" tabindex="0" role="radio"
@@ -456,9 +481,10 @@
     let rawData;
 
     querySessionData(project);
+    calculateMarketingStatus(project);
 
-    if (dicProjectDatas[project] != null) {
-      rawData = dicProjectDatas[project];
+    if (dicUserDatas[project] != null) {
+      rawData = dicUserDatas[project];
       updateProjectData(rawData);
       return;
     }
@@ -473,9 +499,33 @@
       console.log("get data completed");
       console.log(snapshot.val());
       rawData = snapshot.val();
-      dicProjectDatas[project] = rawData;
+      dicUserDatas[project] = rawData;
       updateProjectData(rawData);
     });
+  }
+
+  function calculateMarketingStatus(project){
+    let projectData = dicProjectDatas[project];
+    let adSpend = projectData["adSpend"];
+    console.log("ad spend: ");
+    console.log(adSpend);
+
+    let columnNames = [];
+    let values = [];
+    for(let i = 0; i <= 30; i++){
+      columnNames.push("day " + i);
+      values.push(i);
+    } 
+    let datas = [];
+    let data = {};
+    data["columnNames"] = columnNames;
+    data["color"] = "red";
+    data["title"] = "ad spend";
+    data["values"] = values;
+
+    datas.push(data);
+
+    drawMarketingChart(projectData, "chartMarketingStatus", datas);
   }
 
   function querySessionData(project){
@@ -606,7 +656,7 @@
     dicHavePlay = {};
 
     let project = $('input[name=project]:checked').val();
-    let versionData = dicProjectDatas[project][version];
+    let versionData = dicUserDatas[project][version];
     let str = "";
 
     str += "this is pikachu\n";
@@ -1028,7 +1078,7 @@
 
   function calculateUserProperty(version){
     let project = $('input[name=project]:checked').val();
-    let versionData = dicProjectDatas[project][version];
+    let versionData = dicUserDatas[project][version];
     let sessionData = dicSessionDatas[project][version];
 
     let userCount = 0;
@@ -1281,6 +1331,35 @@
       let sessionCount = user["sessionCount"];
       totalSessionCount += sessionCount;
     }
+  }
+
+  function drawMarketingChart(projectData, chartName, datas){
+    if (dicCharts[chartName] != null) {
+      dicCharts[chartName].destroy();
+    }
+    let chart = new Chart(chartName, {
+      type: "line",
+      data: {
+        labels: datas[0]["columnNames"],
+        datasets: [{
+          label: datas[0]["title"],
+          backgroundColor: datas[0]["color"],
+          data: datas[0]["values"],
+          borderColor: datas[0]["color"],
+          fill: false
+        }]
+      },
+      options: {
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true
+            }
+          }]
+        }
+      }
+    });
+    dicCharts[chartName] = chart;
   }
 </script>
 

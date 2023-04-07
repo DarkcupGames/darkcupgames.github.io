@@ -12,4 +12,4 @@ const firebaseConfig = {
 //Default conffig
 const app = firebase.initializeApp(firebaseConfig, 'main');
 const defaultDb = firebase.database(app);
-const databaseConfig = defaultDb.ref('databaseConfig');
+const databaseConfig = defaultDb.ref('projects');
