@@ -554,26 +554,16 @@
       console.log("key = " + key + " spend = " + dicAdSpend[key] );
       let s = dicAdSpend[key] == null ? 0 : dicAdSpend[key];
       let r =  dicRevenue[key] == null ? 0 :  dicRevenue[key];
-      let profit = s - r;
+      let profit = r - s;
 
       finalAdSpend.push(s);
       finalRevenue.push(r);
       finalProfit.push(profit);
     }
+    console.log("profit:");
+    console.log(finalProfit);
 
-    let datas = [];
-    let data = {};
-    data["columnNames"] = allKey;
-    data["color"] = "red";
-    data["title"] = "ad spend";
-    data["values"] = finalAdSpend;
-
-    console.log("final ad spend");
-    console.log(finalAdSpend);
-
-    datas.push(data);
-
-    drawMarketingChart("chartMarketingStatus", allKey, datas);
+    drawMarketingChart("chartMarketingStatus", allKey, finalAdSpend, finalRevenue, finalProfit);
   }
 
   function querySessionData(project){
@@ -1381,7 +1371,7 @@
     }
   }
 
-  function drawMarketingChart(chartName, columnNames, datas){
+  function drawMarketingChart(chartName, columnNames, adSpend, revenue, profit){
     if (dicCharts[chartName] != null) {
       dicCharts[chartName].destroy();
     }
@@ -1390,12 +1380,27 @@
       data: {
         labels: columnNames,
         datasets: [{
-          label: datas[0]["title"],
-          backgroundColor: datas[0]["color"],
-          data: datas[0]["values"],
-          borderColor: datas[0]["color"],
+          label: "ad spend",
+          backgroundColor: "red",
+          data: adSpend,
+          borderColor: "red",
           fill: false
-        }]
+        },
+        {
+          label: "revenue",
+          backgroundColor: "blue",
+          data: revenue,
+          borderColor: "blue",
+          fill: false
+        },
+        {
+          label: "profit",
+          backgroundColor: "green",
+          data: profit,
+          borderColor: "green",
+          fill: false
+        }
+      ]
       },
       options: {
         scales: {
