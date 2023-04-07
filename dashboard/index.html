@@ -71,15 +71,16 @@
 
     <div class="col">
       
+      <canvas id="chartRewardedPerUserEachVersion" style="width:100%;max-width:700px"></canvas>
     </div>
 
     <div class="col">
-      <!-- <canvas id="chartImpressionPerUserEachVersion" style="width:100%;max-width:700px"></canvas> -->
+      <canvas id="chartIntertistialCapping" style="width:100%;max-width:700px"></canvas>
     </div>
 
 
     <div class="col">
-      <!-- <canvas id="chartImpressionPerUserEachVersion" style="width:100%;max-width:700px"></canvas> -->
+      <canvas id="chartTrashUserPercent" style="width:100%;max-width:700px"></canvas>
     </div>
 
 
@@ -492,6 +493,8 @@
       // console.log("get data completed");
       // console.log(snapshot.val());
       dicSessionDatas[project] = snapshot.val();
+      // updateSessionData(dicSessionDatas[project]);
+      countUserTrashPercent(dicSessionDatas[project]);
     });
   }
 
@@ -503,6 +506,9 @@
   let playTimeEachSessions = [];
   let revenuePerUser = [];
   let intertistialPerUser = [];
+  let rewardedPerUser = [];
+  let intertistialCapping = [];
+  let trashUserPercent = [];
 
   function updateProjectData(rawData) {
     versions = [];
@@ -513,6 +519,8 @@
     playTimeEachSessions = [];
     revenuePerUser = [];
     intertistialPerUser = [];
+    rewardedPerUser = [];
+    intertistialCapping = [];
 
     let gameTotalRevenue = 0;
 
@@ -540,7 +548,9 @@
         gameTotalRevenue += totalRevenue;
         revenuePerUser.push(totalRevenue / userCount);
         intertistialPerUser.push(impressionIntertistial / userCount);
-
+        rewardedPerUser.push(impressionRewarded / userCount);
+        intertistialCapping.push((totalPlayTime / impressionIntertistial / 60).toFixed(2));
+        
         let htmlPattern = `<div class="chip chip-checkbox" aria-labelledby="${versionName}" tabindex="0" role="radio"
                 aria-checked="false" onclick="updateVersionData('${versionName}')">
                 <input type="radio" id="${versionName}" name="version" value="${versionName}"/>
@@ -555,8 +565,25 @@
     drawChart("chartPlayTimeAvg", "Play time per session", versionHaveUsers, playTimeEachSessions);
     drawChart("chartRevenuePerUserEachVersion", "Revenue per user", versionHaveUsers, revenuePerUser);
     drawChart("chartImpressionPerUserEachVersion", "Intertistial count per user", versionHaveUsers, intertistialPerUser);    
+    drawChart("chartRewardedPerUserEachVersion", "Rewarded count per user", versionHaveUsers, rewardedPerUser);   
+    drawChart("chartIntertistialCapping", "Time between 2 intertistial (minutes)", versionHaveUsers, intertistialCapping);    
+      
     $('#revenueTotal').text(gameTotalRevenue.toFixed(4));
   }
+
+  // function updateSessionData(projectData){
+  //   trashUserPercent = [];
+  //   console.log("update sessionData");
+  //   countUserTrashPercent(projectData);
+
+  //   // for (const versionName in projectData){
+  //   //   let session = projectData[versionName];
+  //   //   trashUserPercent.push(countUserTrashPercent(session));
+  //   //   console.log(session);
+  //   // }
+  //   // 
+
+  // }
 
   let dicUserDate = {};
   let dicLanguage = {};
@@ -592,7 +619,7 @@
       if (isRealUser == false) continue;
 
       let words = userId.split("_");
-      console.log(words[0]);
+      // console.log(words[0]);
       str += words[0];
 
       let dateStr = words[0];
@@ -604,7 +631,7 @@
 
       const differenceInMs = new Date().getTime() - date.getTime();
       const playDay = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
-      console.log(`play day = ${playDay}, retention type = ${user["retentionType"]}`);
+      // console.log(`play day = ${playDay}, retention type = ${user["retentionType"]}`);
 
       let retentionType = parseInt(user["retentionType"]);
       
@@ -626,7 +653,7 @@
     }
     //checking retention
     for(let i = 0; i <= 30; i++){
-      console.log("checking retention " + i);
+      // console.log("checking retention " + i);
       let sum = 0;
       for (const retentionType in dicRetention) {      
         if (retentionType >= i){
@@ -657,11 +684,14 @@
   }
 
   let countUserTrash = 0;
+  const delay = ms => new Promise(res => setTimeout(res, ms));
 
-  function showUserSessionSnapShot(version){
+  async function showUserSessionSnapShot(version){
     let project = $('input[name=project]:checked').val();
     let versionData = dicSessionDatas[project][version];
 
+    countUserTrash = 0;
+    let count = 0;
     $('#userSessionGroup').children().remove();
     for (const userId in versionData) {
       let user = versionData[userId];
@@ -672,11 +702,51 @@
         if (actions == null){
           countUserTrash++;
         }
-        drawActionBoard(session, index);
+        try {
+          drawActionBoard(session, index);
+        } catch (error){
+          console.log(error);
+        }
+        await delay(100);
         index++;
+        count++;
       }
     }
+    console.log("draw action boards count = " + count);
   }
+
+  function countUserTrashPercent(rawData){
+    let dicTrashUser = {};
+
+    for (const versionName in rawData){
+      let versionData = rawData[versionName];
+      countUserTrash = 0;
+      let count = 0;
+      for (const userId in versionData) {
+        let user = versionData[userId];
+        let index = 0;
+        let isTrashUser = true;
+        for (const sessionId in user) {
+          let isRealUser = user[sessionId]['installer'] == 'com.android.vending';
+          if (isRealUser == false) continue;
+
+          let session = user[sessionId];
+          let actions = session["actions"];
+          if (actions != null){
+            if (actions.length > 0) isTrashUser = false;
+          }
+        }
+        if (isTrashUser) countUserTrash++;
+        count++;
+      }
+      console.log("version " + versionName + " trash user count = " + countUserTrash);
+      console.log("percent " + versionName + " trash user percent count = " + (countUserTrash / count *100).toFixed(2));
+      if (count >= MIN_NUMBER_USER_ANALYTICS){
+        dicTrashUser[versionName] = (countUserTrash / count *100).toFixed(2);
+      }
+    }
+    drawChartByDictionary("chartTrashUserPercent", "Trash User Percent", dicTrashUser);    
+  }  
 
   function drawActionBoard(session, index){
     let isRealUser = session['installer'] == 'com.android.vending';
@@ -686,6 +756,8 @@
     let colors = [];
     let values = [];
     let names = [];
+
+    if (actions == null) return;
 
     for (let i = 0; i < actions.length; i++) {
       let color = "transparent";
@@ -755,7 +827,7 @@
           </table>
         </div>
         <div class="col-8">
-          <canvas id="${chartName}" style="max-width:700px;"></canvas>
+          <canvas id="${chartName}" "></canvas>
         </div>
     </div>`;
     $('#userSessionGroup').append(htmlPattern);
@@ -1052,7 +1124,7 @@
       impressionRewarded += revenue["rewardSuccess"];
       impressionAppOpen += revenue["appOpenSuccess"];
       
-      console.log("revenue detail = " + revenue);
+      // console.log("revenue detail = " + revenue);
     }
     totalRevenue = revenueAppOpen + revenueBanner + revenueIntertistial + revenueRewarded;
     totalImpression = impressionBanner + impressionAppOpen + impressionIntertistial + impressionRewarded;
