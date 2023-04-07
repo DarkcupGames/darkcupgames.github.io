@@ -810,11 +810,6 @@
               </tr>
               <tr>
                 <th scope="row">1</th>
-                <td>Language</td>
-                <td><span id="snapShotLanguage_${id}">30%</span></td>
-              </tr>
-              <tr>
-                <th scope="row">1</th>
                 <td>Session Time</td>
                 <td><span id="snapShotSessionTime_${id}">30%</span></td>
               </tr>
@@ -822,6 +817,21 @@
                 <th scope="row">1</th>
                 <td>Total Time</td>
                 <td><span id="snapShotTotalTime_${id}">30%</span></td>
+              </tr>
+              <tr>
+                <th scope="row">1</th>
+                <td>Quit Reason</td>
+                <td><span id="snapShotQuitReason_${id}">30%</span></td>
+              </tr>
+              <tr>
+                <th scope="row">1</th>
+                <td>Last Level</td>
+                <td><span id="snapShotQuitReasonLevel_${id}">30%</span></td>
+              </tr>
+              <tr>
+                <th scope="row">1</th>
+                <td>Last Lose Count</td>
+                <td><span id="snapShotQuitReasonLoseCount_${id}">30%</span></td>
               </tr>
             </tbody>
           </table>
@@ -836,10 +846,14 @@
 
     let sessionTime = Number(session["sessionTime"]) / 60;
     let totalTime = Number(session["totalTime"]) / 60;
+    let quitReason = session["quitReason"];
     $("#snapShotUserId_" + id).text(session["id"]);
     $("#snapShotLanguage_" + id).text(session["language"]);
     $("#snapShotSessionTime_" + id).text(sessionTime.toFixed(2));
     $("#snapShotTotalTime_" + id).text(totalTime.toFixed(2));
+    $("#snapShotQuitReason_" + id).text(quitReason["type"]);
+    $("#snapShotQuitReasonLevel_" + id).text(quitReason["level"]);
+    $("#snapShotQuitReasonLoseCount_" + id).text(quitReason["loseCount"]);
   }
 
   let dicLevel = {};
