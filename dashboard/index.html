@@ -94,11 +94,14 @@
     <!-- </div> -->
   </fieldset>
   <div class="row ">
-
-    <canvas id="chartMarketingStatus" style="width:100%;"></canvas>
-    <!-- <div class="col">
+    <div class="col-4">
       
     </div>
+    <div class="col-8">
+      <canvas id="chartMarketingStatus" style="width:100%;"></canvas>
+    </div>
+   
+    <!-- 
 
 
     <div class="col">
@@ -507,25 +510,70 @@
   function calculateMarketingStatus(project){
     let projectData = dicProjectDatas[project];
     let adSpend = projectData["adSpend"];
+    let revenue = projectData["revenue"];
     console.log("ad spend: ");
     console.log(adSpend);
 
-    let columnNames = [];
-    let values = [];
-    for(let i = 0; i <= 30; i++){
-      columnNames.push("day " + i);
-      values.push(i);
-    } 
+    let dicAdSpend = {};
+    let dicRevenue = {};
+    let dicProfit = {};
+    let allKey = [];
+
+    for (const mKey in adSpend){
+      let month = adSpend[mKey];
+      for (const dKey in month){
+        let date = mKey + dKey;
+        let value = month[dKey];
+        dicAdSpend[date] = value;
+
+        if (allKey.includes(date) == false) allKey.push(date);
+      }
+    }
+
+    for (const mKey in revenue){
+      let month = revenue[mKey];
+      for (const dKey in month){
+        let date = mKey + dKey;
+        let value = month[dKey];
+        dicRevenue[date] = value;
+
+        if (allKey.includes(date) == false) allKey.push(date);
+      }
+    }
+    console.log("all key: ");
+    console.log(allKey);
+    console.log("dic ad spend");
+    console.log(dicAdSpend);
+
+    let finalAdSpend = [];
+    let finalRevenue = [];
+    let finalProfit = [];
+
+    for (const index in allKey){
+      let key = allKey[index];
+      console.log("key = " + key + " spend = " + dicAdSpend[key] );
+      let s = dicAdSpend[key] == null ? 0 : dicAdSpend[key];
+      let r =  dicRevenue[key] == null ? 0 :  dicRevenue[key];
+      let profit = s - r;
+
+      finalAdSpend.push(s);
+      finalRevenue.push(r);
+      finalProfit.push(profit);
+    }
+
     let datas = [];
     let data = {};
-    data["columnNames"] = columnNames;
+    data["columnNames"] = allKey;
     data["color"] = "red";
     data["title"] = "ad spend";
-    data["values"] = values;
+    data["values"] = finalAdSpend;
+
+    console.log("final ad spend");
+    console.log(finalAdSpend);
 
     datas.push(data);
 
-    drawMarketingChart(projectData, "chartMarketingStatus", datas);
+    drawMarketingChart("chartMarketingStatus", allKey, datas);
   }
 
   function querySessionData(project){
@@ -1333,14 +1381,14 @@
     }
   }
 
-  function drawMarketingChart(projectData, chartName, datas){
+  function drawMarketingChart(chartName, columnNames, datas){
     if (dicCharts[chartName] != null) {
       dicCharts[chartName].destroy();
     }
     let chart = new Chart(chartName, {
       type: "line",
       data: {
-        labels: datas[0]["columnNames"],
+        labels: columnNames,
         datasets: [{
           label: datas[0]["title"],
           backgroundColor: datas[0]["color"],
@@ -1353,7 +1401,7 @@
         scales: {
           yAxes: [{
             ticks: {
-              beginAtZero: true
+              // beginAtZero: true
             }
           }]
         }
