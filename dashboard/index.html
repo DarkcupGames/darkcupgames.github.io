@@ -93,7 +93,7 @@
     <!-- <div class="chip-group" tabindex="-1" role="radiogroup" id="versionChip"> -->
     <!-- </div> -->
   </fieldset>
-  <div class="row ">
+  <div class="row " id="marketingStatus">
     <div class="col-4">
       <table class="table table-striped">
         <thead>
@@ -129,20 +129,15 @@
     </div>
     <div class="col-8">
       <canvas id="chartMarketingStatus" style="width:100%;"></canvas>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-6">
+      <canvas id="chartMarketingCPI" style="width:100%;"></canvas>
+    </div>
+    <div class="col-6">
       <canvas id="chartMarketingTrashPercent" style="width:100%;"></canvas>
     </div>
-   
-    <!-- 
-
-
-    <div class="col">
-      <canvas id="chartLevelLose" style="width:100%;max-width:700px"></canvas>
-    </div>
-
-    <div class="col">
-      <canvas id="chartLevelTimeSpent" style="width:100%;max-width:700px"></canvas>
-    </div> -->
-
   </div>
 
   <div class="separator"></div>
@@ -542,13 +537,20 @@
     let projectData = dicProjectDatas[project];
     let adSpend = projectData["adSpend"];
     let revenue = projectData["revenue"];
+    let userCount = projectData["userCount"];
     console.log("ad spend: ");
     console.log(adSpend);
+
+    if (adSpend == null || adSpend == undefined){
+      $("#marketingStatus").hide();
+    } else {
+      $("#marketingStatus").show();
+    }
 
     let dicAdSpend = {};
     let dicRevenue = {};
     let dicProfit = {};
-
+    let dicUserCount = {};
     let allKey = [];
 
     let totalRevenue = 0;
@@ -576,6 +578,16 @@
         if (allKey.includes(date) == false) allKey.push(date);
       }
     }
+
+    for (const mKey in userCount){
+      let month = userCount[mKey];
+      for (const dKey in month){
+        let date = mKey + dKey;
+        let value = month[dKey];
+        dicUserCount[date] = value;
+      }
+    }
+
     totalProfit = totalRevenue - totalAdSpend;
     console.log("all key: ");
     console.log(allKey);
@@ -585,6 +597,8 @@
     let finalAdSpend = [];
     let finalRevenue = [];
     let finalProfit = [];
+    let finalUserCount = [];
+    let finalCPI = [];
 
     for (const index in allKey){
       let key = allKey[index];
@@ -593,9 +607,14 @@
       let r =  dicRevenue[key] == null ? 0 :  dicRevenue[key];
       let profit = r - s;
 
+      let uCount = dicUserCount[key] == null ? 0 :  dicRevenue[key];
+      let cpi = uCount == 0 ? 0 : s /uCount;
+
       finalAdSpend.push(s);
       finalRevenue.push(r);
       finalProfit.push(profit);
+      finalUserCount.push(uCount);
+      finalCPI.push(cpi);
     }
     console.log("profit:");
     console.log(finalProfit);
@@ -604,7 +623,12 @@
     $("#marketStatus_revenue").text(formatCurrentcy(totalRevenue));
     $("#marketStatus_adSpend").text(formatCurrentcy(totalAdSpend));
     $("#marketStatus_roas").text((totalRevenue/totalAdSpend*100).toFixed(2)+ "%");
-    drawMarketingChart("chartMarketingStatus", allKey, finalAdSpend, finalRevenue, finalProfit);
+    // drawMarketingChart("chartMarketingStatus", allKey, finalAdSpend, finalRevenue, finalProfit);
+    let dataLabels = ["ad spend", "revenue", "profit"];
+    let dataColors = ["red", "blue", "green"];
+    let dataValues = [finalAdSpend, finalRevenue, finalProfit];
+
+    drawLineChart("chartMarketingStatus", allKey, dataLabels, dataValues,dataColors );
   }
 
   function formatCurrentcy(number){
@@ -628,10 +652,7 @@
 
     ref.once('value', (snapshot) => {
       $('#loaderOverlay').hide();
-      // console.log("get data completed");
-      // console.log(snapshot.val());
       dicSessionDatas[project] = snapshot.val();
-      // updateSessionData(dicSessionDatas[project]);
       countUserTrashPercent(dicSessionDatas[project]);
     });
   }
@@ -895,6 +916,7 @@
       realUser.push(realUserCount);
     }
     drawMarketingTrashPercent("chartMarketingTrashPercent", allKey, reportedUser, realUser, trashPercent);
+    drawMarketingCPI("chartMarketingCPI", allKey, reportedUser, realUser, trashPercent);
   }
 
   function countUserTrashPercent(rawData){
@@ -1539,6 +1561,40 @@
           fill: false
         }
       ]
+      },
+      options: {
+        scales: {
+          yAxes: [{
+            ticks: {
+              // beginAtZero: true
+            }
+          }]
+        }
+      }
+    });
+    dicCharts[chartName] = chart;
+  }
+
+  function drawLineChart(chartName, columnNames, dataLabels, dataValues, dataColors){
+    if (dicCharts[chartName] != null) {
+      dicCharts[chartName].destroy();
+    }
+    let sets = [];
+    for (let i =0;i < dataLabels.length; i++){
+      let data = {};
+      data.label = dataLabels[i];
+      data.backgroundColor = dataColors[i];
+      data.data = dataValues[i];
+      data.borderColor = dataColors[i];
+      data.fill = false;
+
+      sets.push(data);
+    }
+    let chart = new Chart(chartName, {
+      type: "line",
+      data: {
+        labels: columnNames,
+        datasets: sets
       },
       options: {
         scales: {
