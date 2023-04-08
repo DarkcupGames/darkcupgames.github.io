@@ -607,14 +607,14 @@
       let r =  dicRevenue[key] == null ? 0 :  dicRevenue[key];
       let profit = r - s;
 
-      let uCount = dicUserCount[key] == null ? 0 :  dicRevenue[key];
+      let uCount = dicUserCount[key] == null ? 0 :  dicUserCount[key];
       let cpi = uCount == 0 ? 0 : s /uCount;
 
       finalAdSpend.push(s);
       finalRevenue.push(r);
       finalProfit.push(profit);
       finalUserCount.push(uCount);
-      finalCPI.push(cpi);
+      finalCPI.push(cpi.toFixed(4));
     }
     console.log("profit:");
     console.log(finalProfit);
@@ -623,12 +623,17 @@
     $("#marketStatus_revenue").text(formatCurrentcy(totalRevenue));
     $("#marketStatus_adSpend").text(formatCurrentcy(totalAdSpend));
     $("#marketStatus_roas").text((totalRevenue/totalAdSpend*100).toFixed(2)+ "%");
-    // drawMarketingChart("chartMarketingStatus", allKey, finalAdSpend, finalRevenue, finalProfit);
+    
     let dataLabels = ["ad spend", "revenue", "profit"];
     let dataColors = ["red", "blue", "green"];
     let dataValues = [finalAdSpend, finalRevenue, finalProfit];
-
     drawLineChart("chartMarketingStatus", allKey, dataLabels, dataValues,dataColors );
+
+    dataLabels = ["cpi"];
+    dataColors = ["blue"];
+    dataValues = [finalCPI];
+    drawChart("chartMarketingCPI", "cpi", allKey, finalCPI);
+    // drawLineChart("chartMarketingCPI", allKey, dataLabels, dataValues,dataColors );
   }
 
   function formatCurrentcy(number){
@@ -915,8 +920,12 @@
       reportedUser.push(repotedUserCount);
       realUser.push(realUserCount);
     }
-    drawMarketingTrashPercent("chartMarketingTrashPercent", allKey, reportedUser, realUser, trashPercent);
-    drawMarketingCPI("chartMarketingCPI", allKey, reportedUser, realUser, trashPercent);
+
+    let dataLabels = ["reported user", "real user", "trash user percent"];
+    let dataColors = ["blue", "green", "red"];
+    let dataValues = [reportedUser, realUser, trashPercent];
+    drawLineChart("chartMarketingTrashPercent", allKey, dataLabels, dataValues,dataColors );
+    // drawMarketingTrashPercent("chartMarketingTrashPercent", allKey, reportedUser, realUser, trashPercent);
   }
 
   function countUserTrashPercent(rawData){
@@ -1487,93 +1496,93 @@
     }
   }
 
-  function drawMarketingChart(chartName, columnNames, adSpend, revenue, profit){
-    if (dicCharts[chartName] != null) {
-      dicCharts[chartName].destroy();
-    }
-    let chart = new Chart(chartName, {
-      type: "line",
-      data: {
-        labels: columnNames,
-        datasets: [{
-          label: "ad spend",
-          backgroundColor: "red",
-          data: adSpend,
-          borderColor: "red",
-          fill: false
-        },
-        {
-          label: "revenue",
-          backgroundColor: "blue",
-          data: revenue,
-          borderColor: "blue",
-          fill: false
-        },
-        {
-          label: "profit",
-          backgroundColor: "green",
-          data: profit,
-          borderColor: "green",
-          fill: false
-        }
-      ]
-      },
-      options: {
-        scales: {
-          yAxes: [{
-            ticks: {
-              // beginAtZero: true
-            }
-          }]
-        }
-      }
-    });
-    dicCharts[chartName] = chart;
-  }
+  // function drawMarketingChart(chartName, columnNames, adSpend, revenue, profit){
+  //   if (dicCharts[chartName] != null) {
+  //     dicCharts[chartName].destroy();
+  //   }
+  //   let chart = new Chart(chartName, {
+  //     type: "line",
+  //     data: {
+  //       labels: columnNames,
+  //       datasets: [{
+  //         label: "ad spend",
+  //         backgroundColor: "red",
+  //         data: adSpend,
+  //         borderColor: "red",
+  //         fill: false
+  //       },
+  //       {
+  //         label: "revenue",
+  //         backgroundColor: "blue",
+  //         data: revenue,
+  //         borderColor: "blue",
+  //         fill: false
+  //       },
+  //       {
+  //         label: "profit",
+  //         backgroundColor: "green",
+  //         data: profit,
+  //         borderColor: "green",
+  //         fill: false
+  //       }
+  //     ]
+  //     },
+  //     options: {
+  //       scales: {
+  //         yAxes: [{
+  //           ticks: {
+  //             // beginAtZero: true
+  //           }
+  //         }]
+  //       }
+  //     }
+  //   });
+  //   dicCharts[chartName] = chart;
+  // }
 
-  function drawMarketingTrashPercent(chartName, columnNames, reportedUser, realUser, trashPercent){
-    if (dicCharts[chartName] != null) {
-      dicCharts[chartName].destroy();
-    }
-    let chart = new Chart(chartName, {
-      type: "line",
-      data: {
-        labels: columnNames,
-        datasets: [{
-          label: "reported user count",
-          backgroundColor: "blue",
-          data: reportedUser,
-          borderColor: "blue",
-          fill: false
-        },
-        {
-          label: "real user count",
-          backgroundColor: "green",
-          data: realUser,
-          borderColor: "green",
-          fill: false
-        },
-        {
-          label: "trash user pecent",
-          backgroundColor: "red",
-          data: trashPercent,
-          borderColor: "red",
-          fill: false
-        }
-      ]
-      },
-      options: {
-        scales: {
-          yAxes: [{
-            ticks: {
-              // beginAtZero: true
-            }
-          }]
-        }
-      }
-    });
-    dicCharts[chartName] = chart;
-  }
+  // function drawMarketingTrashPercent(chartName, columnNames, reportedUser, realUser, trashPercent){
+  //   if (dicCharts[chartName] != null) {
+  //     dicCharts[chartName].destroy();
+  //   }
+  //   let chart = new Chart(chartName, {
+  //     type: "line",
+  //     data: {
+  //       labels: columnNames,
+  //       datasets: [{
+  //         label: "reported user count",
+  //         backgroundColor: "blue",
+  //         data: reportedUser,
+  //         borderColor: "blue",
+  //         fill: false
+  //       },
+  //       {
+  //         label: "real user count",
+  //         backgroundColor: "green",
+  //         data: realUser,
+  //         borderColor: "green",
+  //         fill: false
+  //       },
+  //       {
+  //         label: "trash user pecent",
+  //         backgroundColor: "red",
+  //         data: trashPercent,
+  //         borderColor: "red",
+  //         fill: false
+  //       }
+  //     ]
+  //     },
+  //     options: {
+  //       scales: {
+  //         yAxes: [{
+  //           ticks: {
+  //             // beginAtZero: true
+  //           }
+  //         }]
+  //       }
+  //     }
+  //   });
+  //   dicCharts[chartName] = chart;
+  // }
 
   function drawLineChart(chartName, columnNames, dataLabels, dataValues, dataColors){
     if (dicCharts[chartName] != null) {
