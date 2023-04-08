@@ -136,6 +136,16 @@
       <canvas id="chartMarketingCPI" style="width:100%;"></canvas>
     </div>
     <div class="col-6">
+      <canvas id="chartMarketingROAS" style="width:100%;"></canvas>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-6">
+      
+      <canvas id="chartMarketingRevenuePerUser" style="width:100%;"></canvas>
+    </div>
+    <div class="col-6">
       <canvas id="chartMarketingTrashPercent" style="width:100%;"></canvas>
     </div>
   </div>
@@ -599,6 +609,8 @@
     let finalProfit = [];
     let finalUserCount = [];
     let finalCPI = [];
+    let finalROAS = [];
+    let finalRevenuePerUser = [];
 
     for (const index in allKey){
       let key = allKey[index];
@@ -608,13 +620,17 @@
       let profit = r - s;
 
       let uCount = dicUserCount[key] == null ? 0 :  dicUserCount[key];
-      let cpi = uCount == 0 ? 0 : s /uCount;
+      let cpi = uCount == 0 ? 0 : s / uCount;
+      let roas = s == 0 ? 0 : r / s;
+      let revenuePerUser = uCount == 0 ? 0 : r / uCount;
 
       finalAdSpend.push(s);
       finalRevenue.push(r);
       finalProfit.push(profit);
       finalUserCount.push(uCount);
       finalCPI.push(cpi.toFixed(4));
+      finalROAS.push((roas * 100).toFixed(4));
+      finalRevenuePerUser.push(revenuePerUser);
     }
     console.log("profit:");
     console.log(finalProfit);
@@ -633,7 +649,21 @@
     dataColors = ["blue"];
     dataValues = [finalCPI];
     drawChart("chartMarketingCPI", "cpi", allKey, finalCPI);
-    // drawLineChart("chartMarketingCPI", allKey, dataLabels, dataValues,dataColors );
+
+    dataLabels = ["roas (%)"];
+    dataColors = ["blue"];
+    dataValues = [finalROAS];
+    drawLineChart("chartMarketingROAS", allKey, dataLabels, dataValues,dataColors );
+
+    dataLabels = ["cpi" ,"revenue per user"];
+    dataColors = ["red", "green"];
+    dataValues = [finalCPI, finalRevenuePerUser];
+    drawLineChart("chartMarketingRevenuePerUser", allKey, dataLabels, dataValues, dataColors );
+
+    console.log("revenue per use: ");
+    console.log(finalRevenuePerUser);
+    console.log("final revenue: ");
+    console.log(finalRevenue);
   }
 
   function formatCurrentcy(number){
