@@ -129,6 +129,7 @@
     </div>
     <div class="col-8">
       <canvas id="chartMarketingStatus" style="width:100%;"></canvas>
+      <canvas id="chartMarketingTrashPercent" style="width:100%;"></canvas>
     </div>
    
     <!-- 
@@ -536,7 +537,7 @@
       updateProjectData(rawData);
     });
   }
-
+  
   function calculateMarketingStatus(project){
     let projectData = dicProjectDatas[project];
     let adSpend = projectData["adSpend"];
@@ -547,6 +548,7 @@
     let dicAdSpend = {};
     let dicRevenue = {};
     let dicProfit = {};
+
     let allKey = [];
 
     let totalRevenue = 0;
@@ -804,6 +806,8 @@
     calculateQuitReason(versionData);
     calculateRevenue(versionData);
 
+    countMarketingTrashPercent(dicUserDate);
+
     drawChartByDictionary("chartUserByDay","New user by day", dicUserDate);
     drawChartByDictionary("chartLanguage", "User by language", dicLanguage);
     drawChartByDictionary("chartLanguagePlayTime", "Play time by language (minute)", dicLanguagePlayTime);
@@ -849,6 +853,48 @@
       }
     }
     console.log("draw action boards count = " + count);
+  }
+
+  function countMarketingTrashPercent(dicNewUserByDate){
+    let project = $('input[name=project]:checked').val();
+    let projectData = dicProjectDatas[project];
+    let userMarketingCount = projectData["userCount"];
+
+    let dicUserCount = {};
+    let allKey = [];
+
+    for (const mKey in userMarketingCount){
+      let month = userMarketingCount[mKey];
+      for (const dKey in month){
+        let date = mKey + dKey;
+        let value = month[dKey];
+        dicUserCount[date] = value;
+        if (allKey.includes(date) == false) allKey.push(date);
+      }
+    }
+
+    let trashPercent = [];
+    let reportedUser = [];
+    let realUser = [];
+
+    for (const index in allKey){
+      let key = allKey[index];
+      let realUserCount = 0;
+      let repotedUserCount = 0;
+
+      if (dicNewUserByDate[key] != null) realUserCount = dicNewUserByDate[key];
+      if (dicUserCount[key] != null) repotedUserCount = dicUserCount[key];
+
+      if (dicNewUserByDate[key] == null || dicUserCount[key] == 0 || realUserCount > repotedUserCount || realUserCount <= 5) {
+        trashPercent.push(0);
+      } else {
+        let percent = (1 - dicNewUserByDate[key] / dicUserCount[key]) *100;
+        trashPercent.push(percent.toFixed(2));
+      }
+      reportedUser.push(repotedUserCount);
+      realUser.push(realUserCount);
+    }
+    drawMarketingTrashPercent("chartMarketingTrashPercent", allKey, reportedUser, realUser, trashPercent);
   }
 
   function countUserTrashPercent(rawData){
@@ -1462,6 +1508,51 @@
     });
     dicCharts[chartName] = chart;
   }
+
+  function drawMarketingTrashPercent(chartName, columnNames, reportedUser, realUser, trashPercent){
+    if (dicCharts[chartName] != null) {
+      dicCharts[chartName].destroy();
+    }
+    let chart = new Chart(chartName, {
+      type: "line",
+      data: {
+        labels: columnNames,
+        datasets: [{
+          label: "reported user count",
+          backgroundColor: "blue",
+          data: reportedUser,
+          borderColor: "blue",
+          fill: false
+        },
+        {
+          label: "real user count",
+          backgroundColor: "green",
+          data: realUser,
+          borderColor: "green",
+          fill: false
+        },
+        {
+          label: "trash user pecent",
+          backgroundColor: "red",
+          data: trashPercent,
+          borderColor: "red",
+          fill: false
+        }
+      ]
+      },
+      options: {
+        scales: {
+          yAxes: [{
+            ticks: {
+              // beginAtZero: true
+            }
+          }]
+        }
+      }
+    });
+    dicCharts[chartName] = chart;
+  }
+
 </script>
 
 </html>
