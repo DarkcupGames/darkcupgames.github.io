@@ -572,9 +572,10 @@
       for (const dKey in month){
         let date = mKey + dKey;
         let value = month[dKey];
-        dicAdSpend[date] = value;
+        let key = Number(date);
+        dicAdSpend[key] = value;
         totalAdSpend += value;
-        if (allKey.includes(date) == false) allKey.push(date);
+        if (allKey.includes(key) == false) allKey.push(key);
       }
     }
 
@@ -583,9 +584,10 @@
       for (const dKey in month){
         let date = mKey + dKey;
         let value = month[dKey];
-        dicRevenue[date] = value;
+        let key = Number(date);
+        dicRevenue[key] = value;
         totalRevenue += value;
-        if (allKey.includes(date) == false) allKey.push(date);
+        if (allKey.includes(key) == false) allKey.push(key);
       }
     }
 
@@ -594,7 +596,8 @@
       for (const dKey in month){
         let date = mKey + dKey;
         let value = month[dKey];
-        dicUserCount[date] = value;
+        let key = Number(date);
+        dicUserCount[key] = value;
       }
     }
 
@@ -611,6 +614,8 @@
     let finalCPI = [];
     let finalROAS = [];
     let finalRevenuePerUser = [];
+
+    allKey.sort();
 
     for (const index in allKey){
       let key = allKey[index];
@@ -882,12 +887,16 @@
   let countUserTrash = 0;
   const delay = ms => new Promise(res => setTimeout(res, ms));
 
+  let currectSessionVersion;
+
   async function showUserSessionSnapShot(version){
     let project = $('input[name=project]:checked').val();
     let versionData = dicSessionDatas[project][version];
 
+    currectSessionVersion = version;
     countUserTrash = 0;
     let count = 0;
+    let canDraw = true;
     $('#userSessionGroup').children().remove();
     for (const userId in versionData) {
       let user = versionData[userId];
@@ -906,7 +915,10 @@
         await delay(100);
         index++;
         count++;
+        if (currectSessionVersion != version) canDraw = false;
+        if (canDraw == false) break;
       }
+      if (canDraw == false) break;
     }
     console.log("draw action boards count = " + count);
   }
@@ -924,8 +936,9 @@
       for (const dKey in month){
         let date = mKey + dKey;
         let value = month[dKey];
-        dicUserCount[date] = value;
-        if (allKey.includes(date) == false) allKey.push(date);
+        let key = Number(date);
+        dicUserCount[key] = value;
+        if (allKey.includes(key) == false) allKey.push(key);
       }
     }
 
@@ -933,6 +946,7 @@
     let reportedUser = [];
     let realUser = [];
 
+    allKey.sort();
     for (const index in allKey){
       let key = allKey[index];
       let realUserCount = 0;
@@ -1497,7 +1511,7 @@
     return drawChartWithColors(chartName, title, columnNames, values, barColors);
   }
 
-  const MIN_NUMBER_USER_ANALYTICS = 5;
+  const MIN_NUMBER_USER_ANALYTICS = 1;
 
   let retentionDay0 = 0;
   let retentionDay1 = 0;
