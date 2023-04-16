@@ -1177,6 +1177,7 @@
       if (isNoob) countUserNoob++;
 
       let losePercent = Math.floor((sumLose / sumLevelPlayCount).toFixed(2)*100);
+      losePercent = Math.round(losePercent / 10) * 10;
       // console.log("user lose percent = " + losePercent);
       count(dicUserByLosePercent, losePercent);
       add(dicUserPlaytimeByLosePercent, losePercent, user["totalPlayTime"]);
