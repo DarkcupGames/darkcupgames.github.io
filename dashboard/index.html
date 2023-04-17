@@ -54,7 +54,7 @@
         <tbody>
           <tr>
             <th scope="row">1</th>
-            <td>Playtime per section</td>
+            <td>Total ads per session</td>
             <td><span id="marketStatus_adSpend">30%</span></td>
           </tr>
           <tr>
@@ -81,13 +81,16 @@
       <!-- <canvas id="chartNumberUser" style="max-width:700px"></canvas> -->
     </div>
 
+    
     <div class="col-3">
-      <canvas id="chartTotalAdsPerUserEachVersion" style="max-width:700px"></canvas>
+      <!-- <canvas id="chartTotalAdsPerUserEachVersion" style="max-width:700px"></canvas> -->
+      <!-- <canvas id="chartPlayTime" style="max-width:700px"></canvas> -->
     </div>
 
     <div class="col-3">
-      <!-- <canvas id="chartPlayTimeAvg" style="max-width:700px"></canvas> -->
+      <!-- <canvas id="chartAdsEachType" style="max-width:700px"></canvas> -->
     </div>
+
 
   </div>
 
@@ -102,28 +105,17 @@
       <canvas id="chartPlayTime" style="max-width:700px"></canvas>
     </div>
     <div class="col-3">
-      <canvas id="chartSessionCount" style="max-width:700px"></canvas>
+      <!-- <canvas id="chartSessionCount" style="max-width:700px"></canvas> -->
+      <canvas id="chartAdsEachType" style="max-width:700px"></canvas>
     </div>
 
     <div class="col-3">
-      <canvas id="chartPlayTimeAvg" style="max-width:700px"></canvas>
+      <canvas id="chartImpressionPerUserEachVersion" style="max-width:700px"></canvas>
     </div>
 
   </div>
 
   <div class="row ">
-
-
-
-    <div class="col">
-      <!-- <canvas id="chartRevenuePerUserEachVersion" style="width:100%;max-width:700px"></canvas> -->
-      <canvas id="chartImpressionPerUserEachVersion" style="width:100%;max-width:700px"></canvas>
-    </div>
-
-    <div class="col">
-      
-      <canvas id="chartRewardedPerUserEachVersion" style="width:100%;max-width:700px"></canvas>
-    </div>
 
     <div class="col">
       <canvas id="chartIntertistialCapping" style="width:100%;max-width:700px"></canvas>
@@ -132,6 +124,17 @@
 
     <div class="col">
       <canvas id="chartTrashUserPercent" style="width:100%;max-width:700px"></canvas>
+    </div>
+
+    
+    <div class="col">
+      <!-- <canvas id="chartRevenuePerUserEachVersion" style="width:100%;max-width:700px"></canvas> -->
+      <!-- <canvas id="chartImpressionPerUserEachVersion" style="width:100%;max-width:700px"></canvas> -->
+    </div>
+
+    <div class="col">
+      
+      <!-- <canvas id="chartRewardedPerUserEachVersion" style="width:100%;max-width:700px"></canvas> -->
     </div>
 
 
@@ -764,6 +767,7 @@
   let playTimeEachSessions = [];
   let revenuePerUser = [];
   let totalAdsPerUser = [];
+  let totalAdsPerSession = [];
   let intertistialPerUser = [];
   let rewardedPerUser = [];
   let appOpenPerUser = [];
@@ -779,6 +783,7 @@
     playTimeEachSessions = [];
     revenuePerUser = [];
     totalAdsPerUser = [];
+    totalAdsPerSession = [];
     intertistialPerUser = [];
     rewardedPerUser = [];
     appOpenPerUser = [];
@@ -808,8 +813,9 @@
 
         calculateRevenue(userdata);
         gameTotalRevenue += totalRevenue;
-        let adPerUser = (impressionIntertistial + impressionAppOpen + impressionRewarded*1.5) / userCount;
-        totalAdsPerUser.push(adPerUser);
+        let sumAds = (impressionIntertistial + impressionAppOpen + impressionRewarded*1.5);
+        totalAdsPerUser.push(sumAds / userCount);
+        totalAdsPerSession.push(sumAds / totalSessionCount);
         revenuePerUser.push(totalRevenue / userCount);
         intertistialPerUser.push(impressionIntertistial / userCount);
         rewardedPerUser.push(impressionRewarded / userCount);
@@ -825,18 +831,23 @@
       }
     }
     drawChart("chartNumberUser", "Number of user", versions, userCounts);
-    drawChart("chartPlayTime", "Avg total play time avg (minute)", versionHaveUsers, playTimes);
-    drawChart("chartSessionCount", "Session count per user", versionHaveUsers, sessionCounts);
-    drawChart("chartPlayTimeAvg", "Play time per session", versionHaveUsers, playTimeEachSessions);
-    drawChart("chartRevenuePerUserEachVersion", "Revenue per user", versionHaveUsers, revenuePerUser);
-    drawChart("chartImpressionPerUserEachVersion", "Intertistial count per user", versionHaveUsers, intertistialPerUser);    
-    drawChart("chartRewardedPerUserEachVersion", "Rewarded count per user", versionHaveUsers, rewardedPerUser);   
+    drawChart("chartRevenuePerUserEachVersion", "Revenue per user", versionHaveUsers, revenuePerUser); 
     drawChart("chartIntertistialCapping", "Time between 2 intertistial (minutes)", versionHaveUsers, intertistialCapping);    
       
     let dataLabels = ["intertistial", "rewarded", "app open"];
     let dataColors = ["purple", "green", "orange"];
     let dataValues = [intertistialPerUser, rewardedPerUser, appOpenPerUser];
-    drawStackedBarChart("chartTotalAdsPerUserEachVersion", versionHaveUsers, dataLabels, dataValues,dataColors );
+    drawStackedBarChart("chartAdsEachType", versionHaveUsers, dataLabels, dataValues,dataColors );
+
+    dataLabels = ["playtime per session", "session count", "total playtime"];
+    dataColors = ["purple", "green", "blue"];
+    dataValues = [playTimeEachSessions, sessionCounts, playTimes];
+    drawNormalBarChart("chartPlayTime", versionHaveUsers, dataLabels, dataValues,dataColors );
+
+    dataLabels = ["total ads per session", "total ads per user"];
+    dataColors = ["purple", "green"];
+    dataValues = [totalAdsPerSession, totalAdsPerUser];
+    drawNormalBarChart("chartImpressionPerUserEachVersion", versionHaveUsers, dataLabels, dataValues,dataColors );
 
     $('#revenueTotal').text(gameTotalRevenue.toFixed(4));
   }
@@ -1687,6 +1698,46 @@
     });
     dicCharts[chartName] = chart;
   }
+
+  function drawNormalBarChart(chartName, columnNames, dataLabels, dataValues, dataColors){
+    if (dicCharts[chartName] != null) {
+      dicCharts[chartName].destroy();
+    }
+    let sets = [];
+    for (let i =0;i < dataLabels.length; i++){
+      let data = {};
+      data.label = dataLabels[i];
+      data.backgroundColor = dataColors[i];
+      data.data = dataValues[i];
+
+      sets.push(data);
+    }
+
+    let chart = new Chart(chartName, {
+      type: "bar",
+      data: {
+        labels: columnNames,
+        datasets: sets
+      },
+       // Configuration options go here
+      options: {
+          scales: {
+              xAxes: [{
+                stacked: false
+              }],
+              yAxes: [{
+                stacked: false
+              }]
+            },
+          legend: {
+              display: true,
+          },
+          maintainAspectRatio: false,
+      }
+    });
+    dicCharts[chartName] = chart;
+  }
+
 
 </script>
 
