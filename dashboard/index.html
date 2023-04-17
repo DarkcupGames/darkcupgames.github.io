@@ -38,9 +38,60 @@
     </div>
   </fieldset>
 
-
-
   <div class="separator" style="height: 100px;"></div>
+
+  <div class="row ">
+
+    <div class="col-3">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Important Metric</th>
+            <th scope="col">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">1</th>
+            <td>Playtime per section</td>
+            <td><span id="marketStatus_adSpend">30%</span></td>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <td>Total ads per user</td>
+            <td><span id="important_ads_per_user">30%</span></td>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <td>Total ads per watch ads user</td>
+            <td><span id="marketStatus_profit">30%</span></td>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <td>Retention D1</td>
+            <td><span id="marketStatus_roas">30%</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col-3">
+      <span id="releaseNote"></span>
+      <!-- <canvas id="chartNumberUser" style="max-width:700px"></canvas> -->
+    </div>
+
+    <div class="col-3">
+      <canvas id="chartTotalAdsPerUserEachVersion" style="max-width:700px"></canvas>
+    </div>
+
+    <div class="col-3">
+      <!-- <canvas id="chartPlayTimeAvg" style="max-width:700px"></canvas> -->
+    </div>
+
+  </div>
+
+  <div class="separator" ></div>
 
   <div class="row ">
     <div class="col-3">
@@ -548,6 +599,14 @@
     let adSpend = projectData["adSpend"];
     let revenue = projectData["revenue"];
     let userCount = projectData["userCount"];
+    let releaseNote = projectData["note"];
+
+    let str = "";
+    for (const key in releaseNote){
+      str += key + ":<br>" + releaseNote[key].replaceAll(".","<br>") + "<br>";
+    }
+    if (releaseNote != null) $("#releaseNote").html(str);
+
     console.log("ad spend: ");
     console.log(adSpend);
 
@@ -704,8 +763,10 @@
   let sessionCounts = [];
   let playTimeEachSessions = [];
   let revenuePerUser = [];
+  let totalAdsPerUser = [];
   let intertistialPerUser = [];
   let rewardedPerUser = [];
+  let appOpenPerUser = [];
   let intertistialCapping = [];
   let trashUserPercent = [];
 
@@ -717,8 +778,10 @@
     sessionCounts = [];
     playTimeEachSessions = [];
     revenuePerUser = [];
+    totalAdsPerUser = [];
     intertistialPerUser = [];
     rewardedPerUser = [];
+    appOpenPerUser = [];
     intertistialCapping = [];
 
     let gameTotalRevenue = 0;
@@ -745,9 +808,12 @@
 
         calculateRevenue(userdata);
         gameTotalRevenue += totalRevenue;
+        let adPerUser = (impressionIntertistial + impressionAppOpen + impressionRewarded*1.5) / userCount;
+        totalAdsPerUser.push(adPerUser);
         revenuePerUser.push(totalRevenue / userCount);
         intertistialPerUser.push(impressionIntertistial / userCount);
         rewardedPerUser.push(impressionRewarded / userCount);
+        appOpenPerUser.push(impressionAppOpen / userCount);
         intertistialCapping.push((totalPlayTime / impressionIntertistial / 60).toFixed(2));
         
         let htmlPattern = `<div class="chip chip-checkbox" aria-labelledby="${versionName}" tabindex="0" role="radio"
@@ -767,6 +833,11 @@
     drawChart("chartRewardedPerUserEachVersion", "Rewarded count per user", versionHaveUsers, rewardedPerUser);   
     drawChart("chartIntertistialCapping", "Time between 2 intertistial (minutes)", versionHaveUsers, intertistialCapping);    
       
+    let dataLabels = ["intertistial", "rewarded", "app open"];
+    let dataColors = ["purple", "green", "orange"];
+    let dataValues = [intertistialPerUser, rewardedPerUser, appOpenPerUser];
+    drawStackedBarChart("chartTotalAdsPerUserEachVersion", versionHaveUsers, dataLabels, dataValues,dataColors );
+
     $('#revenueTotal').text(gameTotalRevenue.toFixed(4));
   }
 
@@ -1431,6 +1502,9 @@
     dicImpressionPerSession["rewarded"] = impressionRewarded / sessionCount;
     dicImpressionPerSession["app open"] = impressionAppOpen / sessionCount;
 
+    let totalAdsPerUser = dicImpressionPerUser["intertistial"] + dicImpressionPerUser["app open"] + dicImpressionPerUser["rewarded"] * 1.5;
+    $("#important_ads_per_user").text(totalAdsPerUser.toFixed(2));
+
     drawChartByDictionary("chartRevenue", "Revenue", dicRevenue);
     drawChartByDictionary("chartRevenuePerUser", "Revenue Per User", dicRevenuePerUser);
     drawChartByDictionary("chartRevenuePerImpression", "Revenue Per Impression", dicRevenuePerImpression);
@@ -1541,94 +1615,6 @@
     }
   }
 
-  // function drawMarketingChart(chartName, columnNames, adSpend, revenue, profit){
-  //   if (dicCharts[chartName] != null) {
-  //     dicCharts[chartName].destroy();
-  //   }
-  //   let chart = new Chart(chartName, {
-  //     type: "line",
-  //     data: {
-  //       labels: columnNames,
-  //       datasets: [{
-  //         label: "ad spend",
-  //         backgroundColor: "red",
-  //         data: adSpend,
-  //         borderColor: "red",
-  //         fill: false
-  //       },
-  //       {
-  //         label: "revenue",
-  //         backgroundColor: "blue",
-  //         data: revenue,
-  //         borderColor: "blue",
-  //         fill: false
-  //       },
-  //       {
-  //         label: "profit",
-  //         backgroundColor: "green",
-  //         data: profit,
-  //         borderColor: "green",
-  //         fill: false
-  //       }
-  //     ]
-  //     },
-  //     options: {
-  //       scales: {
-  //         yAxes: [{
-  //           ticks: {
-  //             // beginAtZero: true
-  //           }
-  //         }]
-  //       }
-  //     }
-  //   });
-  //   dicCharts[chartName] = chart;
-  // }
-
-  // function drawMarketingTrashPercent(chartName, columnNames, reportedUser, realUser, trashPercent){
-  //   if (dicCharts[chartName] != null) {
-  //     dicCharts[chartName].destroy();
-  //   }
-  //   let chart = new Chart(chartName, {
-  //     type: "line",
-  //     data: {
-  //       labels: columnNames,
-  //       datasets: [{
-  //         label: "reported user count",
-  //         backgroundColor: "blue",
-  //         data: reportedUser,
-  //         borderColor: "blue",
-  //         fill: false
-  //       },
-  //       {
-  //         label: "real user count",
-  //         backgroundColor: "green",
-  //         data: realUser,
-  //         borderColor: "green",
-  //         fill: false
-  //       },
-  //       {
-  //         label: "trash user pecent",
-  //         backgroundColor: "red",
-  //         data: trashPercent,
-  //         borderColor: "red",
-  //         fill: false
-  //       }
-  //     ]
-  //     },
-  //     options: {
-  //       scales: {
-  //         yAxes: [{
-  //           ticks: {
-  //             // beginAtZero: true
-  //           }
-  //         }]
-  //       }
-  //     }
-  //   });
-  //   dicCharts[chartName] = chart;
-  // }
-
   function drawLineChart(chartName, columnNames, dataLabels, dataValues, dataColors){
     if (dicCharts[chartName] != null) {
       dicCharts[chartName].destroy();
@@ -1658,6 +1644,45 @@
             }
           }]
         }
+      }
+    });
+    dicCharts[chartName] = chart;
+  }
+
+  function drawStackedBarChart(chartName, columnNames, dataLabels, dataValues, dataColors){
+    if (dicCharts[chartName] != null) {
+      dicCharts[chartName].destroy();
+    }
+    let sets = [];
+    for (let i =0;i < dataLabels.length; i++){
+      let data = {};
+      data.label = dataLabels[i];
+      data.backgroundColor = dataColors[i];
+      data.data = dataValues[i];
+
+      sets.push(data);
+    }
+
+    let chart = new Chart(chartName, {
+      type: "bar",
+      data: {
+        labels: columnNames,
+        datasets: sets
+      },
+       // Configuration options go here
+      options: {
+          scales: {
+              xAxes: [{
+                stacked: true
+              }],
+              yAxes: [{
+                stacked: true
+              }]
+            },
+          legend: {
+              display: true,
+          },
+          maintainAspectRatio: false,
       }
     });
     dicCharts[chartName] = chart;
