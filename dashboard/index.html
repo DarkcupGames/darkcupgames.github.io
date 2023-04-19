@@ -44,10 +44,11 @@
 
 
     <div class="col-3">
-      <h3>PROFIT SCORE</h3>
+      <h3>QUALITY SCORE</h3>
       <span style="font-size: 5em;" id="finalScore">90</span>
       <!-- <canvas id="chartTotalAdsPerUserEachVersion" style="max-width:700px"></canvas> -->
       <!-- <canvas id="chartPlayTime" style="max-width:700px"></canvas> -->
+      <h3 id="finalProfit"></h3>
     </div>
 
     <div class="col-3">
@@ -92,6 +93,8 @@
     
 
     <div class="col-3">
+      <span>*Quality Score được tính dựa trên Tổng số quảng cáo trên 1 session và retention, dùng để đánh giá độ tốt của game</span>
+      <br>
       <span>*Profit Score được tính dựa trên Tổng số quảng cáo trên 1 user, final score đạt 100 là điểm huề vốn</span>
       <!-- <canvas id="chartAdsEachType" style="max-width:700px"></canvas> -->
     </div>
@@ -968,6 +971,7 @@
     let playTimePerSession = dicTotalPlaytimePerSession[version];
     let sessionPerUser = dicTotalSessionPerUser[version];
     let percent = dicTotalAdsPerUser[version] / 10 * 100;
+    $("#finalProfit").text("Profit " + percent.toFixed(0) + "%");
     // $("#final_Stat1").text(adsPerSession.toFixed(2));
     // $("#final_Stat2").text(adsPerUser.toFixed(2));
     // $("#final_Stat3").text("This is pikachu");
@@ -981,7 +985,7 @@
 
     let finalScore = Number(dicTotalAdsPerSession[version]) * (1 + Number(dicRetentionPercent[1] /100)) * 100;
     finalScore = finalScore.toFixed(0);
-    showStatRound("#finalScore", percent, 80, 100);
+    showStatRound("#finalScore", Number(finalScore) / 5, 80, 100);
     
     showUserSessionSnapShot(version);
     calculateUserProperty(version);
