@@ -54,17 +54,17 @@
         <tbody>
           <tr>
             <th scope="row">1</th>
-            <td>Total ads per session</td>
+            <td>Total Ads / Session</td>
             <td><span id="final_Stat1">30%</span></td>
           </tr>
           <tr>
             <th scope="row">1</th>
-            <td>Total ads per user</td>
+            <td>Total Ads / User</td>
             <td><span id="final_Stat2">30%</span></td>
           </tr>
           <tr>
             <th scope="row">1</th>
-            <td>Total ads per watch ads user</td>
+            <td>Session Count</td>
             <td><span id="final_Stat3">30%</span></td>
           </tr>
           <tr>
@@ -776,6 +776,7 @@
 
   let dicTotalAdsPerSession = {};
   let dicTotalAdsPerUser = {};
+  let dicTotalSessionPerUser = {};
 
   function updateProjectData(rawData) {
     versions = [];
@@ -821,6 +822,7 @@
         totalAdsPerSession.push(sumAds / totalSessionCount);
         dicTotalAdsPerSession[versionName] = sumAds / totalSessionCount;
         dicTotalAdsPerUser[versionName] = sumAds / userCount;
+        dicTotalSessionPerUser[versionName] = totalSessionCount / userCount;
 
         revenuePerUser.push(totalRevenue / userCount);
         intertistialPerUser.push(impressionIntertistial / userCount);
@@ -956,30 +958,29 @@
 
     let adsPerSession = dicTotalAdsPerSession[version];
     let adsPerUser = dicTotalAdsPerUser[version];
+    let sessionPerUser = dicTotalSessionPerUser[version];
     
     // $("#final_Stat1").text(adsPerSession.toFixed(2));
     // $("#final_Stat2").text(adsPerUser.toFixed(2));
     // $("#final_Stat3").text("This is pikachu");
     // $("#final_Stat4").text("This is pikachu");
 
-    showStat("#final_Stat1", adsPerSession, 2.5, 3.5, 4.5);
-    showStat("#final_Stat2", adsPerUser, 4, 6, 10);
+    showStat("#final_Stat1", adsPerSession, 2.5, 3.5);
+    showStat("#final_Stat2", adsPerUser, 6, 10);
+    showStat("#final_Stat3", sessionPerUser, 3, 6);
 
     showUserSessionSnapShot(version);
     calculateUserProperty(version);
   }
 
-  function showStat(id, value, low, mid, high){
+  function showStat(id, value, low, high){
     $(id).text(value.toFixed(2));
     let color = "#610000";
     if (value < low){
       color = "red";
     } 
-    else if (value < mid){
-      color = "#610000";
-    } 
     else if (value < high){
-      color = "purple";
+      color = "#bf6900";
     } else {
       color = "green";
     }
