@@ -55,22 +55,22 @@
           <tr>
             <th scope="row">1</th>
             <td>Total ads per session</td>
-            <td><span id="marketStatus_adSpend">30%</span></td>
+            <td><span id="final_Stat1">30%</span></td>
           </tr>
           <tr>
             <th scope="row">1</th>
             <td>Total ads per user</td>
-            <td><span id="important_ads_per_user">30%</span></td>
+            <td><span id="final_Stat2">30%</span></td>
           </tr>
           <tr>
             <th scope="row">1</th>
             <td>Total ads per watch ads user</td>
-            <td><span id="marketStatus_profit">30%</span></td>
+            <td><span id="final_Stat3">30%</span></td>
           </tr>
           <tr>
             <th scope="row">1</th>
             <td>Retention D1</td>
-            <td><span id="marketStatus_roas">30%</span></td>
+            <td><span id="final_Stat4">30%</span></td>
           </tr>
         </tbody>
       </table>
@@ -774,6 +774,9 @@
   let intertistialCapping = [];
   let trashUserPercent = [];
 
+  let dicTotalAdsPerSession = {};
+  let dicTotalAdsPerUser = {};
+
   function updateProjectData(rawData) {
     versions = [];
     versionHaveUsers = [];
@@ -816,6 +819,9 @@
         let sumAds = (impressionIntertistial + impressionAppOpen + impressionRewarded*1.5);
         totalAdsPerUser.push(sumAds / userCount);
         totalAdsPerSession.push(sumAds / totalSessionCount);
+        dicTotalAdsPerSession[versionName] = sumAds / totalSessionCount;
+        dicTotalAdsPerUser[versionName] = sumAds / userCount;
+
         revenuePerUser.push(totalRevenue / userCount);
         intertistialPerUser.push(impressionIntertistial / userCount);
         rewardedPerUser.push(impressionRewarded / userCount);
@@ -851,20 +857,6 @@
 
     $('#revenueTotal').text(gameTotalRevenue.toFixed(4));
   }
-
-  // function updateSessionData(projectData){
-  //   trashUserPercent = [];
-  //   console.log("update sessionData");
-  //   countUserTrashPercent(projectData);
-
-  //   // for (const versionName in projectData){
-  //   //   let session = projectData[versionName];
-  //   //   trashUserPercent.push(countUserTrashPercent(session));
-  //   //   console.log(session);
-  //   // }
-  //   // 
-
-  // }
 
   let dicUserDate = {};
   let dicLanguage = {};
@@ -962,8 +954,36 @@
     $('#retentionD7').text(dicRetentionPercent[7] + "%");
     $('#retentionD30').text(dicRetentionPercent[30] + "%");
 
+    let adsPerSession = dicTotalAdsPerSession[version];
+    let adsPerUser = dicTotalAdsPerUser[version];
+    
+    // $("#final_Stat1").text(adsPerSession.toFixed(2));
+    // $("#final_Stat2").text(adsPerUser.toFixed(2));
+    // $("#final_Stat3").text("This is pikachu");
+    // $("#final_Stat4").text("This is pikachu");
+
+    showStat("#final_Stat1", adsPerSession, 2.5, 3.5, 4.5);
+    showStat("#final_Stat2", adsPerUser, 4, 6, 10);
+
     showUserSessionSnapShot(version);
     calculateUserProperty(version);
+  }
+
+  function showStat(id, value, low, mid, high){
+    $(id).text(value.toFixed(2));
+    let color = "#610000";
+    if (value < low){
+      color = "red";
+    } 
+    else if (value < mid){
+      color = "#610000";
+    } 
+    else if (value < high){
+      color = "purple";
+    } else {
+      color = "green";
+    }
+    $(id).css("color", color);
   }
 
   let countUserTrash = 0;
@@ -1726,7 +1746,10 @@
                 stacked: false
               }],
               yAxes: [{
-                stacked: false
+                stacked: false,
+                ticks: {
+                  beginAtZero: true
+                }
               }]
             },
           legend: {
