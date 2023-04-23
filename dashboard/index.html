@@ -83,9 +83,9 @@
           </tr>
         </tbody>
       </table>
-      <span>*Quality Score = playtime 1 sesson * (1 + retention)</span>
+      <span>*Quality Score = ads per sesson * (1 + retention)</span>
       <br>
-      <span>*Profit Score = total ads per userr / 10</span>
+      <span>*Profit Score = total ads per user / 10</span>
       <!-- <canvas id="chartAdsEachType" style="max-width:700px"></canvas> -->
     </div>
 
@@ -132,6 +132,7 @@
 
     
     <div class="col">
+      <canvas id="chartAdsEachSession" style="max-width:700px"></canvas>
       <!-- <canvas id="chartRevenuePerUserEachVersion" style="width:100%;max-width:700px"></canvas> -->
       <!-- <canvas id="chartImpressionPerUserEachVersion" style="width:100%;max-width:700px"></canvas> -->
     </div>
@@ -773,8 +774,11 @@
   let totalAdsPerUser = [];
   let totalAdsPerSession = [];
   let intertistialPerUser = [];
+  let intertistialPerSession = [];
   let rewardedPerUser = [];
+  let rewardedPerSession = [];
   let appOpenPerUser = [];
+  let appOpenPerSession = [];
   let intertistialCapping = [];
   let trashUserPercent = [];
 
@@ -794,8 +798,11 @@
     totalAdsPerUser = [];
     totalAdsPerSession = [];
     intertistialPerUser = [];
+    intertistialPerSession = [];
     rewardedPerUser = [];
+    rewardedPerSession = [];
     appOpenPerUser = [];
+    appOpenPerSession = [];
     intertistialCapping = [];
 
     let gameTotalRevenue = 0;
@@ -822,7 +829,7 @@
 
         calculateRevenue(userdata);
         gameTotalRevenue += totalRevenue;
-        let sumAds = (impressionIntertistial + impressionAppOpen + impressionRewarded*1.5);
+        let sumAds = (impressionIntertistial + impressionAppOpen * 0.5 + impressionRewarded*1.7);
         totalAdsPerUser.push(sumAds / userCount);
         totalAdsPerSession.push(sumAds / totalSessionCount);
         dicTotalAdsPerSession[versionName] = sumAds / totalSessionCount;
@@ -832,8 +839,14 @@
 
         revenuePerUser.push(totalRevenue / userCount);
         intertistialPerUser.push(impressionIntertistial / userCount);
+        intertistialPerSession.push(impressionIntertistial / totalSessionCount);
+
         rewardedPerUser.push(impressionRewarded / userCount);
+        rewardedPerSession.push(impressionRewarded / totalSessionCount);
+
         appOpenPerUser.push(impressionAppOpen / userCount);
+        appOpenPerSession.push(impressionAppOpen / totalSessionCount);
+
         intertistialCapping.push((totalPlayTime / impressionIntertistial / 60).toFixed(2));
         
         let htmlPattern = `<div class="chip chip-checkbox" aria-labelledby="${versionName}" tabindex="0" role="radio"
@@ -848,10 +861,16 @@
     drawChart("chartRevenuePerUserEachVersion", "Revenue per user", versionHaveUsers, revenuePerUser); 
     drawChart("chartIntertistialCapping", "Time between 2 intertistial (minutes)", versionHaveUsers, intertistialCapping);    
       
-    let dataLabels = ["intertistial", "rewarded", "app open"];
+    let dataLabels = ["inter/user", "reward/user", "app open/user"];
     let dataColors = ["purple", "green", "orange"];
     let dataValues = [intertistialPerUser, rewardedPerUser, appOpenPerUser];
     drawStackedBarChart("chartAdsEachType", versionHaveUsers, dataLabels, dataValues,dataColors );
+
+
+    dataLabels = ["inter/session", "rewarded/session", "app open/session"];
+    dataColors = ["purple", "green", "orange"];
+    dataValues = [intertistialPerSession, rewardedPerSession, appOpenPerSession];
+    drawStackedBarChart("chartAdsEachSession", versionHaveUsers, dataLabels, dataValues,dataColors );
 
     dataLabels = ["playtime per session", "session count", "total playtime"];
     dataColors = ["purple", "green", "blue"];
