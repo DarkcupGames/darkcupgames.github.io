@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Page</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <!-- jQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <!-- Firebase JavaScript SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-database.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Your Firebase configuration details -->
+  <!-- <script src="../js/firebaseDefaultConfig.js" defer></script> -->
+  <!-- CSS styles for the login form -->
+  <style>
+    .container {
+      margin-top: 50px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .btn-primary {
+      width: 100%;
+    }
+
+    .hide-content {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">username address:</label>
+                        <input type="username" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+            </div>
+        </div> -->
+
+
+        <form>
+          <div class="form-group">
+            <label for="exampleInputEmail1">Search Date</label>
+            <input type="text" class="form-control" id="inputSearch" placeholder="Nhập ngày DD/MM/YY" >
+          </div>
+
+          <button type="button" class="btn btn-primary" onclick="search()">Search</button>
+        </form>
+    <div class="col " id="tableGroup" style="margin-top: 50px;">
+
+    </div>
+
+  </div>
+</body>
+
+</html>
+
+<script>
+  let dicTables = {};
+  let keys = [];
+
+  $(document).ready(function () {
+    const firebaseConfig = {
+      apiKey: "AIzaSyAm6gPi-wih96IDQ-2UkQUYFapJfCiZ4cU",
+      authDomain: "amway-cdff4.firebaseapp.com",
+      databaseURL: "https://amway-cdff4-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "amway-cdff4",
+      storageBucket: "amway-cdff4.appspot.com",
+      messagingSenderId: "77857782311",
+      appId: "1:77857782311:web:462794cf500fa57f58ac02",
+      measurementId: "G-8FW7646WFS"
+    };
+
+    //Default conffig
+    const app = firebase.initializeApp(firebaseConfig);
+    const defaultDb = firebase.database(app, 'main');
+    const databaseConfig = defaultDb.ref('HCM');
+
+    dicTables = {};
+    dicDatas = {};
+    keys = [];
+
+    databaseConfig.once('value').then((snapshot) => {
+      console.log(snapshot.val());
+
+      snapshot.forEach((childSnapshot) => {
+        var date = childSnapshot.key;
+        var value = childSnapshot.val();
+        let displayDate = date.substring(4, 6) + "/" + date.substring(2, 4) + "/20" + date.substring(0, 2);
+
+        console.log(value);
+        dicDatas[displayDate] = value;
+        let num = Number(date);
+        keys.push(num);
+      });
+
+      console.log("dictable = ");
+      console.log(dicDatas);
+
+      keys.reverse();
+      for(let i = 0; i < keys.length; i++){
+        let displayDate = getDisplayDate(keys[i].toString());
+        let data = dicDatas[displayDate];
+        console.log(data);
+        drawTable(keys[i].toString(), data);
+      }
+    });
+  });
+
+  function getDisplayDate(date){
+    let displayDate = date.substring(4, 6) + "/" + date.substring(2, 4) + "/20" + date.substring(0, 2);
+    return displayDate;
+  }
+
+  function drawTable(date, tableData) {
+
+    let displayDate = date.substring(4, 6) + "/" + date.substring(2, 4) + "/20" + date.substring(0, 2);
+    
+    let htmlPattern = 
+    `  
+    <div class="row">
+
+        <table class="table table-striped" id="table_${date}">
+          
+          <thead>
+            <tr>
+              <th scope="col">Ngày</th>
+              <th scope="col">Thời gian</th>
+              <th scope="col">Id</th>
+              <th scope="col">Tên</th>
+              <th scope="col">Type</th>
+              <th scope="col">Danh hiệu</th>
+              <th scope="col">Thời gian gia nhập</th>
+              <th scope="col">Năm gia nhập</th>
+            </tr>
+          </thead>
+          <tbody>
+
+          </tbody>
+        </table>
+        </div>
+    `;
+
+    dicTables[displayDate] = "table_" + date.toString();
+
+    $("#tableGroup").append(htmlPattern);
+
+    for (const key in tableData) {
+      console.log(tableData[key]);
+      let data = tableData[key];
+      let time = key;
+      // let finalTime = key.substring(6, 8) + ":" + key.substring(8, 10) + ":" + key.substring(10, 12);
+      
+      let hours = Number(key.substring(6, 8));
+      if (hours < 8) hours = 8;
+      if (hours > 18) hours = 18;
+      let hourStr = hours < 10 ? "0" + hours : hours;
+      let finalTime = hourStr + ":" + key.substring(8, 10) + ":" + key.substring(10, 12);
+
+      let rowPatern = 
+        `  
+          <tr>
+            <td>${displayDate}</td>
+            <td>${finalTime}</td>
+            <td>${data['id']}</td>
+            <td>${data['name']}</td>
+            <td>${data['bussinessNature']}</td>
+            <td>${data['title']}</td>
+            <td>${data['applicationDate']}</td>
+            <td>${data['year']}</td>
+          </tr>
+        `;
+
+      let id = 1;
+      $("#table_" + date).append(rowPatern);
+
+    }
+
+    
+  }
+
+  
+function search(){
+  console.log("this is search");
+  let text = $("#inputSearch").val();
+  
+  console.log("this is search, text = " + text);
+
+  for (const key in dicTables){
+    console.log("key = " + key + ", key includes = " + key.includes(text));
+    let tableName = dicTables[key];
+
+    if (key.includes(text)){
+      $("#" + tableName).show();
+      // dicTables[key].show();
+    } else {
+      $("#" + tableName).hide();
+      // dicTables[key].hide();
+    }
+  }
+}
+</script>

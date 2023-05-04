@@ -26,7 +26,12 @@
         }
       }
       if (isLoggedIn) {
-        window.location.assign('/dashboard');
+        let userName = document.cookie.split('; ')[0].split('=')[1];
+        if (userName == "amway"){
+          window.location.assign('/amway');
+        } else {
+          window.location.assign('/dashboard');
+        }
       } else {
         window.location.assign('/login');
       }

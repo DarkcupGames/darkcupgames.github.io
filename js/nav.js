@@ -9,7 +9,8 @@ $(function () {
         .then(html => {
             // Set the content of the div element
             myDiv.innerHTML = html;
-            $('#lblUsername').text(document.cookie.split('; ')[0].split('=')[1]);
+            let userName = document.cookie.split('; ')[0].split('=')[1];
+            $('#lblUsername').text(userName);
         })
         .catch(error => {
             console.error(error);
