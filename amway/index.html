@@ -169,14 +169,15 @@
       console.log(tableData[key]);
       let data = tableData[key];
       let time = key;
-      // let finalTime = key.substring(6, 8) + ":" + key.substring(8, 10) + ":" + key.substring(10, 12);
-      
       let hours = Number(key.substring(6, 8));
       if (hours < 8) hours = 8;
       if (hours > 18) hours = 18;
       let hourStr = hours < 10 ? "0" + hours : hours;
       let finalTime = hourStr + ":" + key.substring(8, 10) + ":" + key.substring(10, 12);
-
+      if (data["title"] == null || data["title"] == "" || data["title"] == " ") {
+        data["title"] = "Normal dist";
+      }
+      console.log(data["title"]);
       let rowPatern = 
         `  
           <tr>
