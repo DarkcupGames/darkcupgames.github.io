@@ -97,7 +97,6 @@
 
 
   </div>
-
   <div class="separator" ></div>
 
   <div class="row ">
@@ -1162,6 +1161,10 @@
     let colors = [];
     let values = [];
     let names = [];
+    let color_app_open = 'yellow';
+    let color_inter = '#CC6CE7';
+    let color_reward = 'purple';
+    let color_banner = 'transparent';
 
     if (actions == null) return;
 
@@ -1175,16 +1178,22 @@
         color = "black";
       }
       else if (action.includes("level")){
-        if (action.includes("pass")){
+        if (action.includes("win")){
           color = "green";
-        } else if (action.includes("fail")){
+        } else if (action.includes("lose")){
           color = "red";
         }
       } else {
         if (action.includes("app open")){
           color = "orange";
-        } else if (action.includes("success")){
-          color = "purple";
+        } else if (action.includes("success") && action.includes("banner") == false){
+          if (action.includes("reward")){
+            color = color_reward;
+          } else if (action.includes("inter")){
+            color = color_inter;
+          } else if (action.includes("appopen")){
+            color = color_app_open;
+          }
         } else if (action.includes("fail")){
           color = "pink";
         }
