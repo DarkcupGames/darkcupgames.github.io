@@ -1539,6 +1539,8 @@
       let isRealUser = user['installerName'] == 'com.android.vending';
       if (isRealUser == false) continue;
 
+      if (user["originalAppVersion"] != user["appVersion"]) continue;
+
       userCount++;
       sessionCount += user["sessionCount"];
       let revenue = user["revenue"];
@@ -1692,6 +1694,9 @@
       var user = allData[property];
       let isRealUser = user['installerName'] == 'com.android.vending';
       if (isRealUser == false) continue;
+
+      if (user["originalAppVersion"] != user["appVersion"]) continue;
+      
       userCount++;
 
       let playTime = user["totalPlayTime"];
