@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AB TEST</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <!-- jQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <!-- Firebase JavaScript SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-database.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+  <!-- Your Firebase configuration details -->
+  <!-- <script src="../js/firebaseDefaultConfig.js" defer></script> -->
+  <!-- CSS styles for the login form -->
+  <style>
+    .container {
+      margin-top: 50px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .btn-primary {
+      width: 100%;
+    }
+
+    .hide-content {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="separator" ></div>
+
+    <div class="row ">
+      <div class="col-3">
+        <canvas id="chartNumberUser" style="max-width:700px"></canvas>
+      </div>
+  
+      <div class="col-3">
+        <canvas id="chartPlayTime" style="max-width:700px"></canvas>
+      </div>
+      <div class="col-3">
+        <!-- <canvas id="chartSessionCount" style="max-width:700px"></canvas> -->
+        <canvas id="chartAdsEachType" style="max-width:700px"></canvas>
+      </div>
+  
+      <div class="col-3">
+        <canvas id="chartImpressionPerUserEachVersion" style="max-width:700px"></canvas>
+      </div>
+  
+    </div>
+
+    <div class="row ">
+      <div class="col-6">
+        <canvas id="chartPerUser_yes" style="max-width:700px"></canvas>
+      </div>
+  
+      <div class="col-6">
+        <canvas id="chartPerSession_yes" style="max-width:700px"></canvas>
+      </div>
+  
+    </div>
+
+    <div class="row ">
+      <div class="col-6">
+        <canvas id="chartPerUser_no" style="max-width:700px"></canvas>
+      </div>
+  
+      <div class="col-6">
+        <canvas id="chartPerSession_no" style="max-width:700px"></canvas>
+      </div>
+  
+    </div>
+
+    <div class="row ">
+      <div class="col-6">
+        <canvas id="chartPerUser" style="max-width:700px"></canvas>
+      </div>
+  
+      <div class="col-6">
+        <canvas id="chartPerSession" style="max-width:700px"></canvas>
+      </div>
+  
+    </div>
+
+  </div>
+</body>
+
+</html>
+
+<script>
+  let dicTables = {};
+  let keys = [];
+  let dicCharts = {};
+  const MIN_NUMBER_USER_ANALYTICS  = 10;
+
+  $(document).ready(function () {
+    const firebaseConfig = {
+      apiKey: "AIzaSyCH_7uKZLuNwC0t59_x-ViFO1pcEOYEmSk",
+      authDomain: "coloring-the-flag.firebaseapp.com",
+      databaseURL: "https://coloring-the-flag-default-rtdb.firebaseio.com",
+      projectId: "coloring-the-flag",
+      storageBucket: "coloring-the-flag.appspot.com",
+      messagingSenderId: "545325841615",
+      appId: "1:545325841615:web:d56bdf63d645a0992e0bba",
+      measurementId: "G-8EV88Z9QDX"
+    };
+
+    //Default conffig
+    const app = firebase.initializeApp(firebaseConfig);
+    const defaultDb = firebase.database(app, '');
+    const databaseConfig = defaultDb.ref('userdata/1_0_888');
+
+    dicTables = {};
+    dicDatas = {};
+    keys = [];
+
+    databaseConfig.once('value').then((snapshot) => {
+      console.log(snapshot.val());
+      showData(snapshot.val());
+      // testDrawChart();
+      // updateProjectData(snapshot.val());
+    });
+  });
+
+
+  function updateProjectData(rawData) {
+    versions = [];
+    versionHaveUsers = [];
+
+    for (const versionName in rawData) {
+      let userdata = rawData[versionName];
+      console.log(versionName);
+      if (versionName == "1_0_888"){
+        versions.push(versionName);
+      }
+      userCount = 10;
+      if (userCount >= MIN_NUMBER_USER_ANALYTICS) {
+        if (versionName == "1_0_888"){
+          versionHaveUsers.push(versionName);
+        }
+      }
+
+      showData(userdata);
+    }
+
+    console.log(versionHaveUsers);
+    // drawChart("chartRevenuePerUserEachVersion", "Revenue per user", versionHaveUsers, revenuePerUser); 
+    // drawChart("chartIntertistialCapping", "Time between 2 intertistial (minutes)", versionHaveUsers, intertistialCapping);    
+      
+    // let dataLabels = ["inter/user", "reward/user", "app open/user"];
+    // let dataColors = ["purple", "green", "orange"];
+    // let dataValues = [intertistialPerUser, rewardedPerUser, appOpenPerUser];
+    // drawStackedBarChart("chartAdsEachType", versionHaveUsers, dataLabels, dataValues,dataColors );
+
+
+    // dataLabels = ["inter/session", "rewarded/session", "app open/session"];
+    // dataColors = ["purple", "green", "orange"];
+    // dataValues = [intertistialPerSession, rewardedPerSession, appOpenPerSession];
+    // drawStackedBarChart("chartAdsEachSession", versionHaveUsers, dataLabels, dataValues,dataColors );
+
+    // dataLabels = ["playtime per session", "session count", "total playtime"];
+    // dataColors = ["purple", "green", "blue"];
+    // dataValues = [playTimeEachSessions, sessionCounts, playTimes];
+    // drawNormalBarChart("chartPlayTime", versionHaveUsers, dataLabels, dataValues,dataColors );
+
+    // dataLabels = ["total ads per session", "total ads per user"];
+    // dataColors = ["purple", "green"];
+    // dataValues = [totalAdsPerSession, totalAdsPerUser];
+    // drawNormalBarChart("chartImpressionPerUserEachVersion", versionHaveUsers, dataLabels, dataValues,dataColors );
+
+    // $('#revenueTotal').text(gameTotalRevenue.toFixed(4));
+  }
+
+  let listYes = [];
+  let listNo = [];
+  let dicUser = {};
+  let dicSession = {};
+
+  function showData(rawData){
+    console.log(rawData);
+
+    listYes = [];
+    listNo = [];
+
+    for (const key in rawData) {
+      let userdata = rawData[key];
+      console.log(userdata["remoteConfigs"]);
+
+      let value = userdata["remoteConfigs"]["show_popup_remember_start_game"];
+      console.log("VALUE IS: ");
+      console.log(value);
+
+      if (value == "True"){
+        listYes.push(userdata);
+      } else{
+        listNo.push(userdata);
+      }
+    } 
+    console.log("NUMBER OF YES: ");
+    console.log(listYes.length);
+    console.log("NUMBER OF NO: ");
+    console.log(listNo.length);
+
+    console.log("REMOTE CONFIG: YES");
+    calculateRevenue(listYes, "yes");
+
+    dicUser["total_yes"] = dicImpressionPerUser["total"];
+    dicUser["banner_yes"] = dicImpressionPerUser["banner"];
+    dicUser["intertistial_yes"] = dicImpressionPerUser["intertistial"];
+    dicUser["rewarded_yes"] = dicImpressionPerUser["rewarded"];
+    dicUser["app open_yes"] = dicImpressionPerUser["app open"];
+
+    // dicImpressionPerUser["total"] = totalImpression / userCount;
+    // dicImpressionPerUser["banner"] = impressionBanner / userCount;
+    // dicImpressionPerUser["intertistial"] = impressionIntertistial / userCount;
+    // dicImpressionPerUser["rewarded"] = impressionRewarded / userCount;
+    // dicImpressionPerUser["app open"] = impressionAppOpen / userCount;
+
+
+    console.log("REMOTE CONFIG: NO");
+    calculateRevenue(listNo, "no");
+
+    dicUser["total_no"] = dicImpressionPerUser["total"];
+    dicUser["banner_no"] = dicImpressionPerUser["banner"];
+    dicUser["intertistial_no"] = dicImpressionPerUser["intertistial"];
+    dicUser["rewarded_no"] = dicImpressionPerUser["rewarded"];
+    dicUser["app open_no"] = dicImpressionPerUser["app open"];
+
+    const ordered = Object.keys(dicUser).sort().reduce(
+      (obj, key) => { 
+        obj[key] = dicUser[key]; 
+        return obj;
+      }, 
+      {}
+    );
+    drawChartByDictionary("chartPerUser", "Impression Per User ", ordered);
+    // drawChartByDictionary("chartPerSession" + key, "Impression Per User " + key, dicImpressionPerUser);
+  }
+
+  // function showStatus(listUsers){
+
+  // }
+
+  // let retentionDay0 = 0;
+  // let retentionDay1 = 0;
+  // let totalPlayTime = 0;
+  // let totalSessionCount = 0;
+  // let userCount = 0;
+
+  // function calculateAll(allData) {
+  //   retentionDay0 = 0;
+  //   retentionDay1 = 0;
+  //   totalPlayTime = 0;
+  //   totalSessionCount = 0;
+  //   userCount = 0;
+
+  //   for (const property in allData) {
+  //     var user = allData[property];
+  //     let isRealUser = user['installerName'] == 'com.android.vending';
+  //     if (isRealUser == false) continue;
+  //     userCount++;
+
+  //     let playTime = user["totalPlayTime"];
+  //     totalPlayTime += playTime;
+
+  //     let sessionCount = user["sessionCount"];
+  //     totalSessionCount += sessionCount;
+  //   }
+  // }
+
+  let dicImpressionPerUser = {};
+  let dicImpressionPerSession = {};
+
+  let sessionCount = 0;
+
+  let impressionBanner = 0;
+  let impressionIntertistial = 0;
+  let impressionRewarded = 0;
+  let impressionAppOpen = 0;
+
+  function calculateRevenue(versionData, key){
+    dicImpressionPerUser = {};
+    dicImpressionPerSession = {};
+
+    sessionCount = 0;
+
+    impressionBanner = 0;
+    impressionIntertistial = 0;
+    impressionRewarded = 0;
+    impressionAppOpen = 0;
+
+    let userCount = 0;
+
+    for (const userId in versionData) {
+      let user = versionData[userId];
+      let isRealUser = user['installerName'] == 'com.android.vending';
+      if (isRealUser == false) continue;
+
+      userCount++;
+      sessionCount += user["sessionCount"];
+      let revenue = user["revenue"];
+      if (revenue == null) continue;
+
+      impressionBanner += revenue["bannerSuccess"];
+      impressionIntertistial += revenue["interSuccess"];
+      impressionRewarded += revenue["rewardSuccess"];
+      impressionAppOpen += revenue["appOpenSuccess"];
+      
+      // console.log("revenue detail = " + revenue);
+    }
+    // totalRevenue = revenueAppOpen + revenueBanner + revenueIntertistial + revenueRewarded;
+    totalImpression = impressionBanner + impressionAppOpen + impressionIntertistial + impressionRewarded;
+
+    // dicRevenue["total"] = totalRevenue;
+    // dicRevenue["banner"] = revenueBanner;
+    // dicRevenue["intertistial"] = revenueIntertistial;
+    // dicRevenue["rewarded"] = revenueRewarded;
+    // dicRevenue["app open"] = revenueAppOpen;
+
+    // dicRevenuePerUser["total"] = totalRevenue / userCount;
+    // dicRevenuePerUser["banner"] = revenueBanner / userCount;
+    // dicRevenuePerUser["intertistial"] = revenueIntertistial / userCount;
+    // dicRevenuePerUser["rewarded"] = revenueRewarded / userCount;
+    // dicRevenuePerUser["app open"] = revenueAppOpen / userCount;
+
+    // dicRevenuePerImpression["total"] = totalRevenue / totalImpression;
+    // dicRevenuePerImpression["banner"] = revenueBanner / impressionBanner;
+    // dicRevenuePerImpression["intertistial"] = revenueIntertistial / impressionIntertistial;
+    // dicRevenuePerImpression["rewarded"] = revenueRewarded / impressionRewarded;
+    // dicRevenuePerImpression["app open"] = revenueAppOpen / impressionAppOpen;
+
+    dicImpressionPerUser["total"] = totalImpression / userCount;
+    dicImpressionPerUser["banner"] = impressionBanner / userCount;
+    dicImpressionPerUser["intertistial"] = impressionIntertistial / userCount;
+    dicImpressionPerUser["rewarded"] = impressionRewarded / userCount;
+    dicImpressionPerUser["app open"] = impressionAppOpen / userCount;
+
+    dicImpressionPerSession["total"] = totalImpression / sessionCount;
+    dicImpressionPerSession["banner"] = impressionBanner / sessionCount;
+    dicImpressionPerSession["intertistial"] = impressionIntertistial / sessionCount;
+    dicImpressionPerSession["rewarded"] = impressionRewarded / sessionCount;
+    dicImpressionPerSession["app open"] = impressionAppOpen / sessionCount;
+
+    // let totalAdsPerUser = dicImpressionPerUser["intertistial"] + dicImpressionPerUser["app open"] + dicImpressionPerUser["rewarded"] * 1.5;
+    // $("#important_ads_per_user").text(totalAdsPerUser.toFixed(2));
+
+    // drawChartByDictionary("chartRevenue", "Revenue", dicRevenue);
+    // drawChartByDictionary("chartRevenuePerUser", "Revenue Per User", dicRevenuePerUser);
+    // drawChartByDictionary("chartRevenuePerImpression", "Revenue Per Impression", dicRevenuePerImpression);
+    drawChartByDictionary("chartPerUser_" + key, "Impression Per User " + key, dicImpressionPerUser);
+    drawChartByDictionary("chartPerSession_" + key, "Impression Per Session " + key, dicImpressionPerSession);
+    console.log("IMPRESSION PER USER: ");
+    console.log(dicImpressionPerUser);
+
+    console.log("IMPRESSION PER SESSION: ");
+    console.log(dicImpressionPerSession);
+
+    // $("#revenueThisVersion").text(dicRevenue["total"].toFixed(4));
+    // $("#revenuePerUser").text(dicRevenuePerUser["total"].toFixed(4));
+
+    // $("#revenueInterPerUser").text(dicImpressionPerUser["intertistial"].toFixed(2));
+    // $("#revenueRewardPerUser").text(dicImpressionPerUser["rewarded"].toFixed(2));
+    // $("#revenueAppOpenPerUser").text(dicImpressionPerUser["app open"].toFixed(2));
+    // $("#revenueBannerPerUser").text(dicImpressionPerUser["banner"].toFixed(2));
+
+    // $("#revenueImpressionPerUser").text(dicImpressionPerUser["total"].toFixed(4));
+  }
+
+  function testDrawChart(){
+    let columnNames = ["pikachu1", "pikachu2", "pikachu3"];
+    let dataLabels = ["inter/user", "reward/user", "app open/user"];
+    let dataColors = ["purple", "green", "orange"];
+    let dataValues = [[2.0, 3.0, 4.0],[2.0, 3.0, 4.0],[2.0, 3.0, 4.0]];
+
+    drawStackedBarChart("chartImpressionPerUserEachVersion",columnNames, dataLabels, dataValues, dataColors);
+
+  }
+
+  function drawChartByDictionary(chartName, title, dic){
+    let columnNames = [];
+    let values = [];
+    for (const key in dic) {
+      columnNames.push(key);
+      values.push(dic[key]);
+    }
+
+    // $("#container").append("<div>THIS IS PIKACHU</div>");
+
+    drawChart(chartName, title, columnNames, values);
+  }
+
+  function drawChart(chartName, title, columnNames, values) {
+    let barColors = [];
+    let colors = ["green", "blue", "purple", "red", "orange"];
+    for (let i = 0; i < columnNames.length; i++) {
+      let colorIndex = i % colors.length;
+      barColors.push(colors[colorIndex]);
+    }
+
+    return drawChartWithColors(chartName, title, columnNames, values, barColors);
+  }
+
+  function drawChartWithColors(chartName, title, columnNames, values, colors){
+    if (dicCharts[chartName] != null) {
+      dicCharts[chartName].destroy();
+    }
+    let chart = new Chart(chartName, {
+      type: "bar",
+      data: {
+        labels: columnNames,
+        datasets: [{
+          label: title,
+          backgroundColor: colors,
+          data: values
+        }]
+      },
+      options: {
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true
+            }
+          }]
+        }
+      }
+    });
+    dicCharts[chartName] = chart;
+  }
+
+  function drawStackedBarChart(chartName, columnNames, dataLabels, dataValues, dataColors){
+    if (dicCharts[chartName] != null) {
+      dicCharts[chartName].destroy();
+    }
+    let sets = [];
+    for (let i =0;i < dataLabels.length; i++){
+      let data = {};
+      data.label = dataLabels[i];
+      data.backgroundColor = dataColors[i];
+      data.data = dataValues[i];
+
+      sets.push(data);
+    }
+
+    let chart = new Chart(chartName, {
+      type: "bar",
+      data: {
+        labels: columnNames,
+        datasets: sets
+      },
+       // Configuration options go here
+      options: {
+          scales: {
+              xAxes: [{
+                stacked: true
+              }],
+              yAxes: [{
+                stacked: true
+              }]
+            },
+          legend: {
+              display: true,
+          },
+          maintainAspectRatio: false,
+      }
+    });
+    dicCharts[chartName] = chart;
+  }
+
+</script>
