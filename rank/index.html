@@ -1,0 +1,58 @@
+<html>
+  THIS IS PIKACHU
+</html>
+
+<script src="../js/jquery.min.js"></script>
+<!-- Bootstrap JS -->
+<script src="../js/bootstrap.min.js"></script>
+<!-- Firebase JavaScript SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-database.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+<script>
+  $(function () {
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyCJAVnRK8Bgb0K0qlGCsWpcFg40FOtwtmY",
+      authDomain: "match-number-2248.firebaseapp.com",
+      databaseURL: "https://match-number-2248-default-rtdb.firebaseio.com",
+      projectId: "match-number-2248",
+      storageBucket: "match-number-2248.appspot.com",
+      messagingSenderId: "665999130947",
+      appId: "1:665999130947:web:ea7d1a60699b1b2a1ceff6",
+      measurementId: "G-18XWGF2FE5",
+    };
+
+    // Import the functions you need from the SDKs you need
+    // import { initializeApp } from "firebase/app";
+    // import { getAnalytics } from "firebase/analytics";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+    //Default conffig
+    const app = firebase.initializeApp(firebaseConfig);
+    const defaultDb = firebase.database(app, "main");
+    const databaseConfig = defaultDb.ref("game/user");
+    const data = [];
+    databaseConfig.once("value").then((snapshot) => {
+      snapshot.forEach((childSnapshot) => {
+        data.push(childSnapshot.val());
+      });
+
+      data.sort(function (a, b) {
+        return b["indexPlayer"] - a["indexPlayer"];
+      });
+
+      let setData = [];
+      let count = data.length;
+      if (count > 50) count = 50;
+      for (let i = 0; i < count; i++) {
+        setData.push(data[i]);
+      }
+      firebase.database().ref().child("game/TopRank").set(setData);
+    });
+  });
+</script>
